@@ -10,6 +10,7 @@ namespace Drawbug
 
         private CommandBuffer _commandBuffer;
         private RenderData _renderData;
+        private WireRender _wireRender;
 
         internal Draw()
         {
@@ -22,16 +23,35 @@ namespace Drawbug
             {
                 WireBuffer = new WireBuffer(1024) // 1kb
             };
+            _wireRender = new WireRender();
         }
 
         internal unsafe void BuildData()
         {
-            _renderData.ProcessCommands(_commandBuffer.GetBuffer());
+            if (_commandBuffer.HasData)
+            {
+                _renderData.ProcessCommands(_commandBuffer.GetBuffer());
+            }
         }
 
-        internal void Render()
+        internal unsafe void GetDataResults()
         {
             _renderData.GetCommandResults();
+            if (_commandBuffer.HasData)
+            {
+                fixed (WireBuffer* wireBufferPtr = &_renderData.WireBuffer)
+                {
+                    _wireRender.UpdateBuffer(wireBufferPtr, wireBufferPtr->Length);
+                }
+            }
+        }
+
+        internal void Render(UnityEngine.Rendering.CommandBuffer cmd)
+        {
+            if (_commandBuffer.HasData)
+            {
+                _wireRender.Render(cmd);
+            }
         }
 
         public void Dispose()
@@ -39,6 +59,7 @@ namespace Drawbug
             _instance = null;
             _commandBuffer.Dispose();
             _renderData.Dispose();
+            _wireRender.Dispose();
         }
         
         internal void Clear()
@@ -58,6 +79,27 @@ namespace Drawbug
             DrawbugManager.Initialize();
             
             _instance._commandBuffer.Line(point1, point2);
+        }
+        
+        public static void Cube(float3 position, float scale)
+        {
+            DrawbugManager.Initialize();
+            
+            _instance._commandBuffer.Cube(position, scale, quaternion.identity);
+        }
+        
+        public static void Cube(float3 position, float3 scale)
+        {
+            DrawbugManager.Initialize();
+            
+            _instance._commandBuffer.Cube(position, scale, quaternion.identity);
+        }
+
+        public static void Cube(float3 position, float3 scale, quaternion rotation)
+        {
+            DrawbugManager.Initialize();
+            
+            _instance._commandBuffer.Cube(position, scale, rotation);
         }
 
     }

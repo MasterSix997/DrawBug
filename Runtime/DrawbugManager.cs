@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Random = UnityEngine.Random;
 
 namespace Drawbug
@@ -11,6 +13,8 @@ namespace Drawbug
         private Draw _draw;
         
         private bool _isEnabled;
+
+        private UnityEngine.Rendering.CommandBuffer _cmd;
         
         public static void Initialize()
         {
@@ -19,7 +23,7 @@ namespace Drawbug
 
             var gameObj = new GameObject(string.Concat("DrawbugManager (", Random.Range(0, 10000).ToString("0000"), ")"))
             {
-                // hideFlags = HideFlags.DontSave | HideFlags.NotEditable | HideFlags.HideInHierarchy | HideFlags.HideInInspector
+                //hideFlags = HideFlags.DontSave | HideFlags.NotEditable | HideFlags.HideInHierarchy | HideFlags.HideInInspector
             };
             Debug.Log(gameObj.name + " Initilized");
             _instance = gameObj.AddComponent<DrawbugManager>();
@@ -45,7 +49,8 @@ namespace Drawbug
             _isEnabled = true;
             _draw = new Draw();
             InsertToPlayerLoop();
-            Camera.onPostRender += RenderUpdate;
+            // RenderPipelineManager.endContextRendering += ContextRendering;
+            _cmd = new UnityEngine.Rendering.CommandBuffer();
         }
 
         private void OnDisable()
@@ -57,11 +62,9 @@ namespace Drawbug
             _instance = null;
             _draw.Dispose();
             RemoveFromPlayerLoop();
-            Camera.onPostRender -= RenderUpdate;
+            // RenderPipelineManager.endContextRendering -= ContextRendering;
+            _cmd.Dispose();
         }
-
-        // LateUpdate can be called without Update being called before
-        private bool _firstUpdate;
         
         private struct BuildDrawbugCommands
         {
@@ -70,6 +73,12 @@ namespace Drawbug
         private struct RenderDrawbugCommands
         {
             
+        }
+
+        private void OnRenderObject()
+        {
+            RenderData();
+            Graphics.ExecuteCommandBuffer(_cmd);
         }
 
         private void InsertToPlayerLoop()
@@ -88,31 +97,59 @@ namespace Drawbug
         
         private void BuildCommandsUpdate()
         {
+            // Debug.Log("========================");
             // Debug.Log("Build Commands");
             // Debug.Log("==============================");
             if (_hasPendingData)
                 return;
-            
+         
             _draw.BuildData();
             _hasPendingData = true;
+            // Debug.Log("Update");
+            // RenderUpdate();
         }
-
-        private void RenderUpdate(Camera camera)
+        
+        private void ContextRendering(ScriptableRenderContext arg1, List<Camera> arg2)
         {
-            if (camera != Camera.main)
-                return;
-
-            if (!_hasPendingData)
-            {
-                Debug.Log("Not pending data");
-                _draw.Clear();
-                return;
-            }
-            
-            _draw.Render();
-            _draw.Clear();
-            _hasPendingData = false;
+            RenderData();
+            arg1.ExecuteCommandBuffer(_cmd);
+            arg1.Submit();
         }
+
+        private void RenderData()
+        {
+            if (_hasPendingData)
+            {
+                _hasPendingData = false;
+                
+                _cmd.Clear();
+                _draw.GetDataResults();
+                _draw.Render(_cmd);
+                _draw.Clear();
+            }
+        }
+
+        // private void RenderUpdate()
+        // {
+        //     if (!_hasPendingData)
+        //     {
+        //         Debug.Log("Not pending data");
+        //         _draw.Clear();
+        //         Debug.Log("----------------------");
+        //         return;
+        //     }
+        //     
+        //     _draw.Render();
+        //     _draw.Clear();
+        //     _hasPendingData = false;
+        //     Debug.Log("Render");
+        //     Debug.Log("----------------------");
+        // }
+
+        // private void OnPostRender()
+        // {
+        //     RenderUpdate();
+        // }
 
         // private void OnRenderObject()
         // {

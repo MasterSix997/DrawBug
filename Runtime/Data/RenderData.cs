@@ -1,6 +1,8 @@
 ﻿using System;
+using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Drawbug
@@ -49,8 +51,6 @@ namespace Drawbug
             _hasJob = false;
             
             _submitJob.Complete();
-
-            Debug.Log(WireBuffer.Length);
         }
         
         private unsafe struct ProcessCommandsJob : IJob
@@ -65,6 +65,59 @@ namespace Drawbug
             {
                 WireBuffer->Submit(lineData.a, lineData.b, 0);
             }
+
+            private void AddCube(CommandBuffer.CubeData cubeData)
+            {
+                // Crie o NativeArray de 24 vértices
+                var data = new NativeArray<float3>(24, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+                var i = 0;
+
+                // Front
+                data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, -.5f, .5f) * cubeData.size) + cubeData.position);
+                data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, .5f, .5f) * cubeData.size) + cubeData.position);
+
+                data[i++] = math.mul(cubeData.rotation, (new float3(.5f, -.5f, .5f) * cubeData.size) + cubeData.position);
+                data[i++] = math.mul(cubeData.rotation, (new float3(.5f, .5f, .5f) * cubeData.size) + cubeData.position);
+
+                data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, .5f, .5f) * cubeData.size) + cubeData.position);
+                data[i++] = math.mul(cubeData.rotation, (new float3(.5f, .5f, .5f) * cubeData.size) + cubeData.position);
+
+                data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, -.5f, .5f) * cubeData.size) + cubeData.position);
+                data[i++] = math.mul(cubeData.rotation, (new float3(.5f, -.5f, .5f) * cubeData.size) + cubeData.position);
+
+                // Back
+                data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, -.5f, -.5f) * cubeData.size) + cubeData.position);
+                data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, .5f, -.5f) * cubeData.size) + cubeData.position);
+
+                data[i++] = math.mul(cubeData.rotation, (new float3(.5f, -.5f, -.5f) * cubeData.size) + cubeData.position);
+                data[i++] = math.mul(cubeData.rotation, (new float3(.5f, .5f, -.5f) * cubeData.size) + cubeData.position);
+
+                data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, .5f, -.5f) * cubeData.size) + cubeData.position);
+                data[i++] = math.mul(cubeData.rotation, (new float3(.5f, .5f, -.5f) * cubeData.size) + cubeData.position);
+
+                data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, -.5f, -.5f) * cubeData.size) + cubeData.position);
+                data[i++] = math.mul(cubeData.rotation, (new float3(.5f, -.5f, -.5f) * cubeData.size) + cubeData.position);
+
+                // Side Connections
+                data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, -.5f, -.5f) * cubeData.size) + cubeData.position);
+                data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, -.5f, .5f) * cubeData.size) + cubeData.position);
+
+                data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, .5f, -.5f) * cubeData.size) + cubeData.position);
+                data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, .5f, .5f) * cubeData.size) + cubeData.position);
+
+                data[i++] = math.mul(cubeData.rotation, (new float3(.5f, -.5f, -.5f) * cubeData.size) + cubeData.position);
+                data[i++] = math.mul(cubeData.rotation, (new float3(.5f, -.5f, .5f) * cubeData.size) + cubeData.position);
+
+                data[i++] = math.mul(cubeData.rotation, (new float3(.5f, .5f, -.5f) * cubeData.size) + cubeData.position);
+                data[i++] = math.mul(cubeData.rotation, (new float3(.5f, .5f, .5f) * cubeData.size) + cubeData.position);
+
+                // Enviar os dados ao WireBuffer (verifique se WireBuffer está corretamente definido)
+                WireBuffer->Submit(data, 24, 0);
+
+                // Libere o NativeArray
+                data.Dispose();
+            }
+
             
             [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             private void Next(ref UnsafeAppendBuffer.Reader reader)
@@ -74,6 +127,9 @@ namespace Drawbug
                 {
                     case CommandBuffer.Command.Line:
                         AddLine(reader.ReadNext<CommandBuffer.LineData>());
+                        break;
+                    case CommandBuffer.Command.Cube:
+                        AddCube(reader.ReadNext<CommandBuffer.CubeData>());
                         break;
                     default:
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

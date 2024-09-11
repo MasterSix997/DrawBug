@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Numerics;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace Drawbug
 {
@@ -12,6 +12,8 @@ namespace Drawbug
     {
         private UnsafeAppendBuffer _buffer;
 
+        internal bool HasData => _buffer.Length > 0;
+        
         internal CommandBuffer(int initialSize)
         {
             _buffer = new UnsafeAppendBuffer(initialSize, 4, Allocator.Persistent);
@@ -35,7 +37,8 @@ namespace Drawbug
         
         internal enum Command
         {
-            Line
+            Line,
+            Cube
         }
         
         internal struct LineData
@@ -45,6 +48,13 @@ namespace Drawbug
         
         internal struct LineDataVector3 {
             public Vector3 a, b;
+        }
+        
+        internal struct CubeData
+        {
+            public float3 position;
+            public float3 size;
+            public quaternion rotation;
         }
         
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -87,7 +97,7 @@ namespace Drawbug
             Add(new LineData {a = a, b = b});
         }
         
-        internal void Line (Vector3 a, Vector3 b) {
+        internal void Line(Vector3 a, Vector3 b) {
             Reserve<LineData>();
             var bufferSize = _buffer.Length;
 
@@ -104,7 +114,17 @@ namespace Drawbug
                 _buffer.Length = newLen;
             }
         }
-        
-        
+
+        internal void Cube(float3 position, float3 size, quaternion rotation)
+        {
+            Reserve<CubeData>();
+            Add(Command.Cube);
+            Add(new CubeData
+            {
+                position = position,
+                size = size,
+                rotation = rotation
+            });
+        }
     }
 }

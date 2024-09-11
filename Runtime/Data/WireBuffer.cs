@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -23,6 +22,8 @@ namespace Drawbug
         private int _currentLength;
         private int _bufferLength;
 
+        // internal PositionData* Buffer => _bufferData;
+
         public WireBuffer(int initialSize)
         {
             // _bufferData = (PositionData*)Marshal.AllocHGlobal(initialSize * Marshal.SizeOf(typeof(PositionData)));
@@ -32,6 +33,18 @@ namespace Drawbug
 
             // _submitJob = default;
             // _hasJob = false;
+        }
+
+        internal NativeArray<float3> VertexArray()
+        {
+            var vertices = new NativeArray<float3>(_currentLength, Allocator.Temp);
+
+            for (int i = 0; i < _currentLength; i++)
+            {
+                vertices[i] = _bufferData[i].Position;
+            }
+
+            return vertices;
         }
 
         internal bool HasData => _currentLength > 0;
@@ -69,6 +82,7 @@ namespace Drawbug
         [BurstCompile]
         internal void Submit(float3 point1, float3 point2, uint dataIndex)
         {
+            // *_bufferData++ = new PositionData()
             _bufferData[_currentLength].DataIndex = dataIndex;
             _bufferData[_currentLength++].Position = point1;
             _bufferData[_currentLength].DataIndex = dataIndex;
@@ -155,7 +169,8 @@ namespace Drawbug
         // {
         //     return new UnsafeList(_bufferData, _currentLength).;
         // }
-        internal void FillBuffer(ref GraphicsBuffer buffer)
+        [BurstDiscard]
+        internal void FillBuffer(GraphicsBuffer buffer)
         {
             // if (_hasJob)
             // {
