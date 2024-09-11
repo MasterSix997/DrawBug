@@ -50,7 +50,10 @@ namespace Drawbug
             _draw = new Draw();
             InsertToPlayerLoop();
             // RenderPipelineManager.endContextRendering += ContextRendering;
-            _cmd = new UnityEngine.Rendering.CommandBuffer();
+            _cmd = new UnityEngine.Rendering.CommandBuffer()
+            {
+                name = "Drawbug"
+            };
         }
 
         private void OnDisable()

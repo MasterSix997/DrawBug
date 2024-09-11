@@ -17,6 +17,10 @@ namespace Drawbug
         internal CommandBuffer(int initialSize)
         {
             _buffer = new UnsafeAppendBuffer(initialSize, 4, Allocator.Persistent);
+            
+            _hasPendingStyle = default;
+            PendingStyle = default;
+            ResetStyle();
         }
 
         public void Dispose()
@@ -33,10 +37,13 @@ namespace Drawbug
         internal void Clear()
         {
             _buffer.Reset();
+            
+            ResetStyle();
         }
         
         internal enum Command
         {
+            Style,
             Line,
             Cube
         }
@@ -57,6 +64,12 @@ namespace Drawbug
             public quaternion rotation;
         }
         
+        internal struct StyleData
+        {
+            public Color color;
+            public bool foward;
+        }
+        
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         private void Reserve (int additionalSpace) 
         {
@@ -75,6 +88,7 @@ namespace Drawbug
         
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         internal void Reserve<T>() where T : struct {
+            ApplyPendingStyle();
             Reserve(UnsafeUtility.SizeOf<Command>() + UnsafeUtility.SizeOf<T>());
         }
         
@@ -89,6 +103,47 @@ namespace Drawbug
             UnsafeUtility.CopyStructureToPtr(ref value, _buffer.Ptr + bufferSize);
             _buffer.Length = bufferSize + valueSize;
         }
+        
+        //================= Style =================
+
+        private bool _hasPendingStyle;
+        internal StyleData PendingStyle;
+
+        internal void StyleColor(Color color)
+        {
+            _hasPendingStyle = true;
+            PendingStyle.color = color;
+        }
+
+        internal void StyleForward(bool forward)
+        {
+            _hasPendingStyle = true;
+            PendingStyle.foward = forward;
+        }
+
+        private void ApplyPendingStyle()
+        {
+            if (!_hasPendingStyle)
+                return;
+            
+            Reserve(UnsafeUtility.SizeOf<Command>() + UnsafeUtility.SizeOf<StyleData>());
+            Add(Command.Style);
+            Add(PendingStyle);
+
+            _hasPendingStyle = false;
+        }
+
+        internal void ResetStyle()
+        {
+            _hasPendingStyle = true;
+            PendingStyle = new StyleData
+            {
+                color = Color.white,
+                foward = false,
+            };
+        }
+        
+        //=========================================
 
         internal void Line(float3 a, float3 b)
         {

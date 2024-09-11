@@ -1,4 +1,5 @@
 ﻿using System;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -18,10 +19,11 @@ namespace Drawbug
                 return;
             
             _instance = this;
-            _commandBuffer = new CommandBuffer(2048); // 2kb
+            _commandBuffer = new CommandBuffer(2048);
             _renderData = new RenderData()
             {
-                WireBuffer = new WireBuffer(1024) // 1kb
+                WireBuffer = new WireBuffer(2048),
+                StyleData = new NativeList<CommandBuffer.StyleData>(1024, Allocator.Persistent)
             };
             _wireRender = new WireRender();
         }
@@ -39,10 +41,7 @@ namespace Drawbug
             _renderData.GetCommandResults();
             if (_commandBuffer.HasData)
             {
-                fixed (WireBuffer* wireBufferPtr = &_renderData.WireBuffer)
-                {
-                    _wireRender.UpdateBuffer(wireBufferPtr, wireBufferPtr->Length);
-                }
+                _wireRender.UpdateBuffer(_renderData.WireBuffer, _renderData.StyleData.ToArray(Allocator.Temp), _renderData.WireBuffer.Length);
             }
         }
 
@@ -65,6 +64,83 @@ namespace Drawbug
         internal void Clear()
         {
             _commandBuffer.Clear();
+        }
+
+        public static void Reset()
+        {
+            DrawbugManager.Initialize();
+            _instance._commandBuffer.ResetStyle();
+        }
+
+        public static Color Color
+        {
+            get
+            {
+                DrawbugManager.Initialize();
+                return _instance._commandBuffer.PendingStyle.color;
+            }
+            set
+            {
+                DrawbugManager.Initialize();
+                _instance._commandBuffer.StyleColor(value);
+            }
+        }
+        
+        public static bool Forward
+        {
+            get
+            {
+                DrawbugManager.Initialize();
+                return _instance._commandBuffer.PendingStyle.foward;
+            }
+            set
+            {
+                DrawbugManager.Initialize();
+                _instance._commandBuffer.StyleForward(value);
+            }
+        }
+        
+        public readonly struct ColorScope : IDisposable
+        {
+            private readonly Color _beforeColor;
+            
+            public ColorScope(Color newColor)
+            {
+                _beforeColor = Color;
+                Color = newColor;
+            }
+            
+            public void Dispose()
+            {
+                Color = _beforeColor;
+            }
+        }
+        
+        public readonly struct DrawScope<T> : IDisposable
+        {
+            private readonly T _before;
+            private readonly Action<T> _setter;
+            public DrawScope(T current, T newValue, Action<T> setter)
+            {
+                _before = current;
+                _setter = setter;
+                _setter.Invoke(newValue);
+            }
+            
+            public void Dispose()
+            {
+                _setter.Invoke(_before);
+            }
+        }
+
+        public static ColorScope WithColorScope(Color color)
+        {
+            return new ColorScope(color);
+        }
+        
+        public static DrawScope<Color> WithColor(Color newColor)
+        {
+            return new DrawScope<Color>(Color, newColor, beforeColor => Color = beforeColor);
         }
 
         public static void Line(float3 point1, float3 point2)

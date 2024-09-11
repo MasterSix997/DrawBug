@@ -1,55 +1,186 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Drawbug
 {
+    // [NativeContainer]
+    // [DebuggerDisplay("Length = {_bufferData == null ? default : Length}, Capacity = {_bufferData == null ? default : Capacity}")]
+    // [DebuggerTypeProxy(typeof(WireBufferDebugView))]
+    // [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+    [StructLayout(LayoutKind.Sequential)]
     [BurstCompile]
     public unsafe struct WireBuffer : IDisposable
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct PositionData
+        [NativeDisableUnsafePtrRestriction]
+        private UnsafeWireBuffer* _bufferData;
+        
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        private AtomicSafetyHandle m_Safety;
+        private static readonly SharedStatic<int> StaticSafetyId = SharedStatic<int>.GetOrCreate<WireBuffer>();
+#endif
+
+        private Allocator _allocatorLabel;
+
+        public WireBuffer(int initialCapacity, Allocator allocator = Allocator.Persistent)
         {
-            public float3 Position;
-            public uint DataIndex;
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            // Native allocation is only valid for Temp, Job and Persistent
+            if (allocator <= Allocator.None)
+                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(allocator));
+            if (initialCapacity < 0)
+                throw new ArgumentOutOfRangeException(nameof(initialCapacity), "Initial Capacity must be >= 0");
+#endif
+            _bufferData = (UnsafeWireBuffer*)UnsafeUtility.Malloc(sizeof(UnsafeWireBuffer), UnsafeUtility.AlignOf<UnsafeWireBuffer>(), allocator);
+            *_bufferData = new UnsafeWireBuffer(initialCapacity, ref allocator);
+            
+            _allocatorLabel = allocator;
+            
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+            CollectionHelper.SetStaticSafetyId<WireBuffer>(ref m_Safety, ref StaticSafetyId.Data);
+#endif
+        }
+        
+        internal int Length => _bufferData->Length;
+        internal int Capacity => _bufferData->Capacity;
+
+        internal void Clear()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+#endif
+            _bufferData->Clear();
+        }
+        
+        internal void Submit(float3 point1, float3 point2, uint dataIndex)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            // If the container is currently not allowed to write to the buffer
+            // then this will throw an exception.
+            // This handles all cases, from already disposed containers
+            // to safe multithreaded access.
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+#endif
+            _bufferData->Submit(point1, point2, dataIndex);
+        }
+        
+        [BurstCompile]
+        internal void Submit(NativeArray<float3> points, int length, uint dataIndex)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            // If the container is currently not allowed to write to the buffer
+            // then this will throw an exception.
+            // This handles all cases, from already disposed containers
+            // to safe multithreaded access.
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+#endif
+            _bufferData->Submit(points, length, dataIndex);
+        }
+        
+        [BurstCompile]
+        internal void Submit(float3* points, int length, uint dataIndex)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            // If the container is currently not allowed to write to the buffer
+            // then this will throw an exception.
+            // This handles all cases, from already disposed containers
+            // to safe multithreaded access.
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+#endif
+            _bufferData->Submit(points, length, dataIndex);
         }
 
+        [BurstDiscard]
+        internal void FillBuffer(GraphicsBuffer buffer)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            // If the container is currently not allowed to read from the buffer
+            // then this will throw an exception.
+            // This handles all cases, from already disposed containers
+            // to safe multithreaded access.
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+
+            _bufferData->FillBuffer(buffer);
+        }
+        
+        internal PositionData[] ToArray()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+
+            return _bufferData->ToArray();
+        }
+
+        public bool IsCreated => _bufferData != null && _bufferData->IsCreated;
+
+        public void Dispose()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
+#endif
+            if (_bufferData == null) 
+                return;
+            
+            _bufferData->Dispose();
+            UnsafeUtility.Free(_bufferData, _allocatorLabel);
+            _bufferData = null;
+        }
+    }
+    
+    internal sealed class WireBufferDebugView
+    {
+        private WireBuffer _buffer;
+
+        public WireBufferDebugView(WireBuffer buffer)
+        {
+            _buffer = buffer;
+        }
+
+        public PositionData[] Items => _buffer.ToArray();
+    }
+    
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct PositionData
+    {
+        public float3 Position;
+        public uint DataIndex;
+    }
+
+    [DebuggerDisplay("Length = {_bufferData == null ? default : Length}, Capacity = {_bufferData == null ? default : Capacity}")]
+    [DebuggerTypeProxy(typeof(WireBufferDebugView))]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+    [StructLayout(LayoutKind.Sequential)]
+    [BurstCompile]
+    internal unsafe struct UnsafeWireBuffer : IDisposable
+    {
+        [NativeDisableUnsafePtrRestriction]
         private PositionData* _bufferData;
         private int _currentLength;
-        private int _bufferLength;
+        private int _bufferCapacity;
 
-        // internal PositionData* Buffer => _bufferData;
+        private Allocator _allocatorLabel;
+        
 
-        public WireBuffer(int initialSize)
+        public UnsafeWireBuffer(int initialCapacity, ref Allocator allocator)
         {
-            // _bufferData = (PositionData*)Marshal.AllocHGlobal(initialSize * Marshal.SizeOf(typeof(PositionData)));
-            _bufferData = (PositionData*)UnsafeUtility.MallocTracked(sizeof(PositionData) * initialSize, 4, Allocator.Persistent, 4002);
+            _bufferData = (PositionData*)UnsafeUtility.Malloc(sizeof(PositionData) * initialCapacity, UnsafeUtility.AlignOf<PositionData>(), allocator);
+            
             _currentLength = 0;
-            _bufferLength = initialSize;
-
-            // _submitJob = default;
-            // _hasJob = false;
+            _bufferCapacity = initialCapacity;
+            _allocatorLabel = allocator;
         }
-
-        internal NativeArray<float3> VertexArray()
-        {
-            var vertices = new NativeArray<float3>(_currentLength, Allocator.Temp);
-
-            for (int i = 0; i < _currentLength; i++)
-            {
-                vertices[i] = _bufferData[i].Position;
-            }
-
-            return vertices;
-        }
-
-        internal bool HasData => _currentLength > 0;
-
+        
         internal int Length => _currentLength;
+        internal int Capacity => _bufferCapacity;
 
         internal void Clear()
         {
@@ -58,39 +189,37 @@ namespace Drawbug
         
         private void EnsureCapacity(int additionalCapacity)
         {
-            if (_currentLength + additionalCapacity > _bufferLength)
+            if (_currentLength + additionalCapacity > _bufferCapacity)
             {
-                var newCapacity = Math.Max(_bufferLength * 2, _currentLength + additionalCapacity);
+                var newCapacity = Math.Max(_bufferCapacity * 2, _currentLength + additionalCapacity);
+                Debug.Log($"Trying to increase the buffer size from '{_bufferCapacity}' to '{newCapacity}'");
         
                 // Aloca um novo bloco de memória
-                PositionData* newBufferPtr = (PositionData*)UnsafeUtility.MallocTracked(newCapacity * sizeof(PositionData), 4, Allocator.Persistent, 4002);
+                PositionData* newBufferPtr = (PositionData*)UnsafeUtility.Malloc(newCapacity * sizeof(PositionData), UnsafeUtility.AlignOf<PositionData>(), _allocatorLabel);
         
                 // Copia os dados antigos para o novo bloco de memória
                 UnsafeUtility.MemCpy(newBufferPtr, _bufferData, _currentLength * sizeof(PositionData));
         
                 // Libera o antigo bloco de memória
-                UnsafeUtility.FreeTracked(_bufferData, Allocator.Persistent);
+                UnsafeUtility.FreeTracked(_bufferData, _allocatorLabel);
 
                 // Atualiza o ponteiro do buffer e seu tamanho
                 _bufferData = newBufferPtr;
-                _bufferLength = newCapacity;
+                _bufferCapacity = newCapacity;
 
-                Debug.Log("Successfully increased size of buffer to: " + _bufferLength);
+                Debug.Log("Successfully increased size of buffer to: " + _bufferCapacity);
             }
         }
         
         [BurstCompile]
         internal void Submit(float3 point1, float3 point2, uint dataIndex)
         {
-            // *_bufferData++ = new PositionData()
+            EnsureCapacity(2);
             _bufferData[_currentLength].DataIndex = dataIndex;
             _bufferData[_currentLength++].Position = point1;
             _bufferData[_currentLength].DataIndex = dataIndex;
             _bufferData[_currentLength++].Position = point2;
         }
-
-        // private JobHandle _submitJob;
-        // private bool _hasJob;
         
         [BurstCompile]
         internal void Submit(NativeArray<float3> points, int length, uint dataIndex)
@@ -104,19 +233,6 @@ namespace Drawbug
             var pairsCount = length / 2;
             var pointsPtr = (float3*)points.GetUnsafeReadOnlyPtr();
             
-            // _submitJob = new SubmitPointsJob
-            // {
-            //     Source = pointsPtr,
-            //     Destination = _bufferData,
-            //     DataIndex = dataIndex,
-            //     CurrentLength = _currentLength,
-            //     PairsCount = pairsCount
-            // }.Schedule();
-            // _hasJob = true;
-            //
-            // _currentLength += length;
-            
-
             for (var i = 0; i < pairsCount; i++)
             {
                 var index = i * 2;
@@ -140,19 +256,6 @@ namespace Drawbug
             
             var pairsCount = length / 2;
             
-            // _submitJob = new SubmitPointsJob
-            // {
-            //     Source = pointsPtr,
-            //     Destination = _bufferData,
-            //     DataIndex = dataIndex,
-            //     CurrentLength = _currentLength,
-            //     PairsCount = pairsCount
-            // }.Schedule();
-            // _hasJob = true;
-            //
-            // _currentLength += length;
-            
-
             for (var i = 0; i < pairsCount; i++)
             {
                 var index = i * 2;
@@ -165,64 +268,32 @@ namespace Drawbug
             }
         }
 
-        // internal NativeArray<PositionData> GetBuffer()
-        // {
-        //     return new UnsafeList(_bufferData, _currentLength).;
-        // }
         [BurstDiscard]
         internal void FillBuffer(GraphicsBuffer buffer)
         {
-            // if (_hasJob)
-            // {
-            //     _submitJob.Complete();
-            //     _hasJob = false; 
-            // }
-
-            // var data = (PositionData*)buffer.LockBufferForWrite<PositionData>(0, _currentLength).GetUnsafePtr();
-            // for (int i = 0; i < _currentLength; i++)
-            // {
-            //     data[i] = _bufferData[i];
-            // }
-            // buffer.UnlockBufferAfterWrite<PositionData>(_currentLength);
-            
             var data = (PositionData*)buffer.LockBufferForWrite<PositionData>(0, _currentLength).GetUnsafePtr();
             UnsafeUtility.MemCpy(data, _bufferData, _currentLength * sizeof(PositionData));
             buffer.UnlockBufferAfterWrite<PositionData>(_currentLength);
         }
+        
+        internal PositionData[] ToArray()
+        {
+            var array = new PositionData[Length];
+            for (var i = 0; i < Length; i++)
+                array[i] = UnsafeUtility.ReadArrayElement<PositionData>(_bufferData, i);
+            return array;
+        }
+
+        public bool IsCreated => _bufferData != null;
 
         public void Dispose()
         {
-            if (_bufferData != null)
-            {
-                Debug.Log("Buffer memory successfully freed.");
-                UnsafeUtility.FreeTracked(_bufferData, Allocator.Persistent);
-                _bufferData = null;
-            }
-            // _bufferData.Dispose();
+            if(!IsCreated)
+                return;
+            
+            Debug.Log("Buffer memory successfully freed.");
+            UnsafeUtility.FreeTracked(_bufferData, _allocatorLabel);
+            _bufferData = null;
         }
-        
-        // [BurstCompile]
-        // private struct SubmitPointsJob : IJob
-        // {
-        //     [NativeDisableUnsafePtrRestriction][ReadOnly] public float3* Source;
-        //     [NativeDisableUnsafePtrRestriction] public PositionData* Destination;
-        //     [ReadOnly] public uint DataIndex; 
-        //     [ReadOnly] public int PairsCount; 
-        //     [ReadOnly] public int CurrentLength;
-        //     
-        //     [BurstCompile]
-        //     public void Execute()
-        //     {
-        //         for (var i = 0; i < PairsCount; i++)
-        //         {
-        //             var index = i * 2;
-        //             Destination[CurrentLength + index].Position = Source[index];
-        //             Destination[CurrentLength + index].DataIndex = DataIndex;
-        //             
-        //             Destination[CurrentLength + index + 1].Position = Source[index + 1];
-        //             Destination[CurrentLength + index + 1].DataIndex = DataIndex;
-        //         }
-        //     }
-        // }
     }
 }
