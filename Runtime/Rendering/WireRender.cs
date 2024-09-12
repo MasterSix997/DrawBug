@@ -1,6 +1,7 @@
 ﻿using System;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Drawbug
 {
@@ -18,6 +19,7 @@ namespace Drawbug
 
         internal unsafe void UpdateBuffer(WireBuffer positions, NativeArray<CommandBuffer.StyleData> styleData, int count)
         {
+            Profiler.BeginSample("Update Buffer");
             if (_positions == null || _positions.count < count)
             {
                 _positions?.Dispose();
@@ -33,13 +35,14 @@ namespace Drawbug
             
             positions.FillBuffer(_positions);
             _styleData.SetData(styleData);
+            Profiler.EndSample();
         }
 
         internal void Render(UnityEngine.Rendering.CommandBuffer cmd)
         {
             cmd.SetGlobalBuffer(PositionsProperty, _positions);
             cmd.SetGlobalBuffer(StyleDataProperty, _styleData);
-            cmd.DrawProcedural(Matrix4x4.identity, _material, 0, MeshTopology.Lines, _positionsCount);
+            cmd.DrawProcedural(Matrix4x4.identity, _material, -1, MeshTopology.Lines, _positionsCount);
         }
 
         public void Dispose()

@@ -2,6 +2,7 @@
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Drawbug
 {
@@ -152,9 +153,29 @@ namespace Drawbug
         
         public static void Line(Vector3 point1, Vector3 point2)
         {
+            Profiler.BeginSample("Line");
             DrawbugManager.Initialize();
             
             _instance._commandBuffer.Line(point1, point2);
+            Profiler.EndSample();
+        }
+
+        public static void Lines(float3[] lines)
+        {
+            Profiler.BeginSample("Lines");
+            DrawbugManager.Initialize();
+            
+            _instance._commandBuffer.Lines(lines);
+            Profiler.EndSample();
+        }
+        
+        public static void Lines(NativeArray<float3> lines)
+        {
+            Profiler.BeginSample("Lines");
+            DrawbugManager.Initialize();
+            
+            _instance._commandBuffer.Lines(lines);
+            Profiler.EndSample();
         }
         
         public static void Cube(float3 position, float scale)

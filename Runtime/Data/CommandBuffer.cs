@@ -45,6 +45,7 @@ namespace Drawbug
         {
             Style,
             Line,
+            Lines,
             Cube
         }
         
@@ -167,6 +168,56 @@ namespace Drawbug
                 lineData->a = a;
                 lineData->b = b;
                 _buffer.Length = newLen;
+            }
+        }
+        
+        internal void Lines(float3[] linesArray)
+        {
+            var arrayLength = linesArray.Length;
+            var sizeOfArray = UnsafeUtility.SizeOf<float3>() * arrayLength;
+            if (arrayLength % 2 != 0)
+            {
+                throw new ArgumentException("Length must be even to submit pairs of points.");
+            }
+            
+            //Reserve for Command, Size of array and array
+            ApplyPendingStyle();
+            Reserve(UnsafeUtility.SizeOf<Command>() + UnsafeUtility.SizeOf<int>() + sizeOfArray);
+            
+            Add(Command.Lines);
+            Add(arrayLength);
+
+            unsafe
+            {
+                void* destinationPtr = _buffer.Ptr + _buffer.Length;
+                void* sourcePtr = UnsafeUtility.AddressOf(ref linesArray[0]);
+                UnsafeUtility.MemCpy(destinationPtr, sourcePtr, sizeOfArray);
+                _buffer.Length += sizeOfArray;
+            }
+        }
+        
+        internal void Lines(NativeArray<float3> linesArray)
+        {
+            var arrayLength = linesArray.Length;
+            var sizeOfArray = UnsafeUtility.SizeOf<float3>() * arrayLength;
+            if (arrayLength % 2 != 0)
+            {
+                throw new ArgumentException("Length must be even to submit pairs of points.");
+            }
+            
+            //Reserve for Command, Size of array and array
+            ApplyPendingStyle();
+            Reserve(UnsafeUtility.SizeOf<Command>() + UnsafeUtility.SizeOf<int>() + sizeOfArray);
+            
+            Add(Command.Lines);
+            Add(arrayLength);
+
+            unsafe
+            {
+                void* destinationPtr = _buffer.Ptr + _buffer.Length;
+                void* sourcePtr = NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(linesArray);
+                UnsafeUtility.MemCpy(destinationPtr, sourcePtr, sizeOfArray);
+                _buffer.Length += sizeOfArray;
             }
         }
 

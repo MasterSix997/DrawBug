@@ -80,6 +80,10 @@ namespace Drawbug
 
         private void OnRenderObject()
         {
+            // if (Camera.current != Camera.main)
+            // {
+            //     return;
+            // }
             RenderData();
             Graphics.ExecuteCommandBuffer(_cmd);
         }
