@@ -13,12 +13,12 @@ namespace Drawbug
         
         //Output
         public WireBuffer WireBuffer;
-        public NativeList<CommandBuffer.StyleData> StyleData;
+        public NativeList<DrawCommandBuffer.StyleData> StyleData;
 
         private bool _firstStyle;
         private uint _currentStyleId;
 
-        private void AddStyle(CommandBuffer.StyleData styleData)
+        private void AddStyle(DrawCommandBuffer.StyleData styleData)
         {
             if (!_firstStyle)
                 _currentStyleId++;
@@ -31,16 +31,16 @@ namespace Drawbug
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         private void Next(ref UnsafeAppendBuffer.Reader reader)
         {
-            var command = reader.ReadNext<CommandBuffer.Command>();
+            var command = reader.ReadNext<DrawCommandBuffer.Command>();
             switch (command)
             {
-                case CommandBuffer.Command.Style:
-                    AddStyle(reader.ReadNext<CommandBuffer.StyleData>());
+                case DrawCommandBuffer.Command.Style:
+                    AddStyle(reader.ReadNext<DrawCommandBuffer.StyleData>());
                     break;
-                case CommandBuffer.Command.Line:
-                    AddLine(reader.ReadNext<CommandBuffer.LineData>());
+                case DrawCommandBuffer.Command.Line:
+                    AddLine(reader.ReadNext<DrawCommandBuffer.LineData>());
                     break;
-                case CommandBuffer.Command.Lines:
+                case DrawCommandBuffer.Command.Lines:
                     int arrayLength = reader.ReadNext<int>();
                     // var linesArray = new NativeArray<float3>(arrayLength, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
 
@@ -56,8 +56,8 @@ namespace Drawbug
                     
                     
                     break;
-                case CommandBuffer.Command.Cube:
-                    AddCube(reader.ReadNext<CommandBuffer.CubeData>());
+                case DrawCommandBuffer.Command.Cube:
+                    AddCube(reader.ReadNext<DrawCommandBuffer.CubeData>());
                     break;
                 default:
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

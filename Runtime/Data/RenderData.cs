@@ -8,7 +8,7 @@ namespace Drawbug
     internal struct RenderData : IDisposable
     {
         internal WireBuffer WireBuffer;
-        internal NativeList<CommandBuffer.StyleData> StyleData;
+        internal NativeList<DrawCommandBuffer.StyleData> StyleData;
         
         private JobHandle _submitJob;
         private bool _hasJob;

@@ -17,7 +17,7 @@ namespace Drawbug
         private GraphicsBuffer _positions;
         private GraphicsBuffer _styleData;
 
-        internal unsafe void UpdateBuffer(WireBuffer positions, NativeArray<CommandBuffer.StyleData> styleData, int count)
+        internal unsafe void UpdateBuffer(WireBuffer positions, NativeArray<DrawCommandBuffer.StyleData> styleData, int count)
         {
             Profiler.BeginSample("Update Buffer");
             if (_positions == null || _positions.count < count)
@@ -28,20 +28,26 @@ namespace Drawbug
                 
                 _styleData?.Dispose();
                 _styleData = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 
-                    count, sizeof(CommandBuffer.StyleData));
+                    count, sizeof(DrawCommandBuffer.StyleData));
             }
             
             _positionsCount = count;
             
             positions.FillBuffer(_positions);
             _styleData.SetData(styleData);
+            
+            _material.SetBuffer(PositionsProperty, _positions);
+            _material.SetBuffer(StyleDataProperty, _styleData);
             Profiler.EndSample();
         }
 
         internal void Render(UnityEngine.Rendering.CommandBuffer cmd)
         {
-            cmd.SetGlobalBuffer(PositionsProperty, _positions);
-            cmd.SetGlobalBuffer(StyleDataProperty, _styleData);
+            cmd.DrawProcedural(Matrix4x4.identity, _material, -1, MeshTopology.Lines, _positionsCount);
+        }
+        
+        internal void Render(UnityEngine.Rendering.RasterCommandBuffer cmd)
+        {
             cmd.DrawProcedural(Matrix4x4.identity, _material, -1, MeshTopology.Lines, _positionsCount);
         }
 

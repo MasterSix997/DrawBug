@@ -5,7 +5,7 @@ namespace Drawbug
 {
     internal unsafe partial struct ProcessCommandsJob
     {
-        private void AddLine(CommandBuffer.LineData lineData)
+        private void AddLine(DrawCommandBuffer.LineData lineData)
         {
             WireBuffer.Submit(lineData.a, lineData.b, _currentStyleId);
         }
@@ -15,7 +15,7 @@ namespace Drawbug
             WireBuffer.Submit(linesPtr, arrayLength, _currentStyleId);
         }
 
-        private void AddCube(CommandBuffer.CubeData cubeData)
+        private void AddCube(DrawCommandBuffer.CubeData cubeData)
         {
             var data = new NativeArray<float3>(24, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             var i = 0;

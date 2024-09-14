@@ -8,13 +8,13 @@ using UnityEngine;
 namespace Drawbug
 {
     [BurstCompile]
-    internal struct CommandBuffer : IDisposable
+    internal struct DrawCommandBuffer : IDisposable
     {
         private UnsafeAppendBuffer _buffer;
 
         internal bool HasData => _buffer.Length > 0;
         
-        internal CommandBuffer(int initialSize)
+        internal DrawCommandBuffer(int initialSize)
         {
             _buffer = new UnsafeAppendBuffer(initialSize, 4, Allocator.Persistent);
             
@@ -80,7 +80,7 @@ namespace Drawbug
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 const int MAX_BUFFER_SIZE = 1024 * 1024 * 256; // 256 MB
                 if (_buffer.Length * 2 > MAX_BUFFER_SIZE) {
-                    throw new Exception("CommandBuffer buffer is very large");
+                    throw new Exception("DrawCommandBuffer buffer is very large");
                 }
 #endif
                 _buffer.SetCapacity(math.max(newLength, _buffer.Length * 2));

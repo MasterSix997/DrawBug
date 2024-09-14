@@ -1,20 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Random = UnityEngine.Random;
+using UnityEngine.Rendering.HighDefinition;
+using UnityEngine.Rendering.Universal;
 
 namespace Drawbug
 {
     internal class DrawbugManager : MonoBehaviour
     {
+        internal enum RenderPipelineOption
+        {
+            BuiltIn,
+            Custom,
+            URP,
+            HDRP
+        }
+        
         private static DrawbugManager _instance;
 
         private Draw _draw;
+        private CommandBuffer _cmd;
         
         private bool _isEnabled;
-
-        private UnityEngine.Rendering.CommandBuffer _cmd;
+        private RenderPipelineOption _currentRenderPipeline = RenderPipelineOption.BuiltIn;
+#if PACKAGE_UNIVERSAL_RP
+        private DrawbugRenderPassFeature _renderPassFeature;
+#endif
         
         public static void Initialize()
         {
@@ -33,7 +44,40 @@ namespace Drawbug
             //     DontDestroyOnLoad(gameObj);
             // }
         }
-        
+
+        private void UpdateCurrentRenderPipeline()
+        {
+            var pipelineType = RenderPipelineManager.currentPipeline != null ? RenderPipelineManager.currentPipeline.GetType() : null;
+            
+#if PACKAGE_HIGH_DEFINITION_RP
+            if (pipelineType == typeof(HDRenderPipeline)) {
+                if (_currentRenderPipeline != RenderPipelineOption.HDRP) {
+                    _currentRenderPipeline = RenderPipelineOption.HDRP;
+                    if (!_instance.gameObject.TryGetComponent(out CustomPassVolume volume)) {
+                        volume = _instance.gameObject.AddComponent<CustomPassVolume>();
+                        volume.isGlobal = true;
+                        volume.injectionPoint = CustomPassInjectionPoint.AfterPostProcess;
+                        volume.customPasses.Add(new DrawbugHDRPCustomPass());
+                    }
+
+                    var asset = GraphicsSettings.defaultRenderPipeline as HDRenderPipelineAsset;
+                    if (asset != null) {
+                        if (!asset.currentPlatformRenderPipelineSettings.supportCustomPass) {
+                            Debug.LogWarning("DebugTool: Custom pass support is disabled in the current render pipeline. Please enable it in the HDRenderPipelineAsset.", asset);
+                        }
+                    }
+                }
+                return;
+            }
+#endif
+#if PACKAGE_UNIVERSAL_RP
+            if (pipelineType == typeof(UniversalRenderPipeline)) {
+                _currentRenderPipeline = RenderPipelineOption.URP;
+                return;
+            }
+#endif
+            _currentRenderPipeline = pipelineType != null ? RenderPipelineOption.Custom : RenderPipelineOption.BuiltIn;
+        }
 
         private void OnEnable()
         {
@@ -49,11 +93,21 @@ namespace Drawbug
             _isEnabled = true;
             _draw = new Draw();
             InsertToPlayerLoop();
-            // RenderPipelineManager.endContextRendering += ContextRendering;
-            _cmd = new UnityEngine.Rendering.CommandBuffer()
+            _cmd = new CommandBuffer()
             {
                 name = "Drawbug"
             };
+            
+            // Configura callback para renderização com pipeline padrão
+            Camera.onPostRender += PostRender;
+            // Configura callback para renderização com pipeline scriptavel
+#if UNITY_2023_3_OR_NEWER
+            RenderPipelineManager.beginContextRendering += BeginContextRendering;
+#else
+			RenderPipelineManager.beginFrameRendering += BeginFrameRendering;
+#endif
+            RenderPipelineManager.beginCameraRendering += BeginCameraRendering;
+            RenderPipelineManager.endCameraRendering += EndCameraRendering;
         }
 
         private void OnDisable()
@@ -63,120 +117,161 @@ namespace Drawbug
 
             _isEnabled = false;
             _instance = null;
-            _draw.Dispose();
             RemoveFromPlayerLoop();
-            // RenderPipelineManager.endContextRendering -= ContextRendering;
+            _draw.Dispose();
             _cmd.Dispose();
+            
+            Camera.onPostRender -= PostRender;
+#if UNITY_2023_3_OR_NEWER
+            RenderPipelineManager.beginContextRendering -= BeginContextRendering;
+#else
+			RenderPipelineManager.beginFrameRendering -= BeginFrameRendering;
+#endif
+            RenderPipelineManager.beginCameraRendering -= BeginCameraRendering;
+            RenderPipelineManager.endCameraRendering -= EndCameraRendering;
+            
+#if PACKAGE_UNIVERSAL_RP
+			if (_renderPassFeature != null) {
+				DestroyImmediate(_renderPassFeature);
+				_renderPassFeature = null;
+			}
+#endif
+        }
+        
+        void BeginContextRendering (ScriptableRenderContext context, List<Camera> cameras) 
+        {
+            UpdateCurrentRenderPipeline();
+        }
+
+        void BeginFrameRendering (ScriptableRenderContext context, Camera[] cameras) 
+        {
+            UpdateCurrentRenderPipeline();
+        }
+
+        void BeginCameraRendering (ScriptableRenderContext context, Camera camera) 
+        {
+#if PACKAGE_UNIVERSAL_RP
+			if (_currentRenderPipeline == RenderPipelineOption.URP) 
+            {
+				var data = camera.GetUniversalAdditionalCameraData();
+				if (data != null) {
+					var renderer = data.scriptableRenderer;
+					if (_renderPassFeature == null) {
+						_renderPassFeature = ScriptableObject.CreateInstance<DrawbugRenderPassFeature>();
+					}
+					_renderPassFeature.AddRenderPasses(renderer);
+				}
+			}
+#endif
+        }
+        
+        private void EndCameraRendering (ScriptableRenderContext context, Camera camera) {
+            if (_currentRenderPipeline == RenderPipelineOption.Custom) 
+            {
+                ExecuteCustomRenderPass(context, camera);
+            }
+        }
+        
+        void PostRender (Camera camera) 
+        {
+            if (_hasPendingData)
+            {
+                _hasPendingData = false;
+                _draw.GetDataResults();
+            }
+            
+            _cmd.Clear();
+            _draw.Render(_cmd);
+            Graphics.ExecuteCommandBuffer(_cmd);
         }
         
         private struct BuildDrawbugCommands
         {
             
         }
-        private struct RenderDrawbugCommands
+        private struct ClearDrawbug
         {
             
-        }
-
-        private void OnRenderObject()
-        {
-            // if (Camera.current != Camera.main)
-            // {
-            //     return;
-            // }
-            RenderData();
-            Graphics.ExecuteCommandBuffer(_cmd);
         }
 
         private void InsertToPlayerLoop()
         {
             PlayerLoopInserter.InsertSystem(typeof(BuildDrawbugCommands), typeof(UnityEngine.PlayerLoop.PostLateUpdate), InsertType.Before, BuildCommandsUpdate);
-            // PlayerLoopInserter.InsertSystem(typeof(RenderDrawbugCommands), typeof(UnityEngine.PlayerLoop.PostLateUpdate), InsertType.After, RenderUpdate);
+            PlayerLoopInserter.InsertSystem(typeof(ClearDrawbug), typeof(UnityEngine.PlayerLoop.EarlyUpdate), InsertType.Before, ClearFrameData);
+        }
+
+        private void ClearFrameData()
+        {
+            _draw.Clear();
         }
 
         private void RemoveFromPlayerLoop()
         {
             PlayerLoopInserter.RemoveRunner(typeof(BuildDrawbugCommands));
-            // PlayerLoopInserter.RemoveRunner(typeof(RenderDrawbugCommands));
+            PlayerLoopInserter.RemoveRunner(typeof(ClearDrawbug));
         }
 
         private bool _hasPendingData;
         
         private void BuildCommandsUpdate()
         {
-            // Debug.Log("========================");
-            // Debug.Log("Build Commands");
-            // Debug.Log("==============================");
             if (_hasPendingData)
                 return;
          
             _draw.BuildData();
             _hasPendingData = true;
-            // Debug.Log("Update");
-            // RenderUpdate();
-        }
-        
-        private void ContextRendering(ScriptableRenderContext arg1, List<Camera> arg2)
-        {
-            RenderData();
-            arg1.ExecuteCommandBuffer(_cmd);
-            arg1.Submit();
         }
 
-        private void RenderData()
+        private void RenderCustomPass(CommandBuffer cmd, Camera camera)
         {
             if (_hasPendingData)
             {
                 _hasPendingData = false;
-                
-                _cmd.Clear();
                 _draw.GetDataResults();
-                _draw.Render(_cmd);
-                _draw.Clear();
             }
+            
+            _draw.Render(cmd);
+        }
+        
+        internal static void ExecuteCustomRenderPass(ScriptableRenderContext context, Camera camera)
+        {
+            if(!_instance._isEnabled)
+                return;
+            
+            _instance._cmd.Clear();
+            _instance.RenderCustomPass(_instance._cmd, camera);
+            context.ExecuteCommandBuffer(_instance._cmd);
+        }
+        
+#if PACKAGE_UNIVERSAL_RP
+        private void RenderGraphPass(RasterCommandBuffer cmd, Camera camera)
+        {
+            if (_hasPendingData)
+            {
+                _hasPendingData = false;
+                _draw.GetDataResults();
+            }
+            
+            _draw.Render(cmd);
         }
 
-        // private void RenderUpdate()
-        // {
-        //     if (!_hasPendingData)
-        //     {
-        //         Debug.Log("Not pending data");
-        //         _draw.Clear();
-        //         Debug.Log("----------------------");
-        //         return;
-        //     }
-        //     
-        //     _draw.Render();
-        //     _draw.Clear();
-        //     _hasPendingData = false;
-        //     Debug.Log("Render");
-        //     Debug.Log("----------------------");
-        // }
+        internal static void ExecuteCustomRenderGraphPass(RasterCommandBuffer cmd, Camera camera)
+        {
+            if(!_instance || !_instance._isEnabled)
+                return;
+            
+            _instance.RenderGraphPass(cmd, camera);
+        }
+#endif
 
-        // private void OnPostRender()
-        // {
-        //     RenderUpdate();
-        // }
-
-        // private void OnRenderObject()
-        // {
-        //     Debug.Log("Render Object");
-        // }
-        // private void Update()
-        // {
-        //     _firstUpdate = true;
-        //     _draw.BuildData();
-        // }
-        //
-        // private void LateUpdate()
-        // {
-        //     if (!_firstUpdate)
-        //     {
-        //         _draw.Clear();
-        //         return;
-        //     }
-        //     _draw.Render();
-        //     _draw.Clear();
-        // }
+#if PACKAGE_HIGH_DEFINITION_RP
+        internal static void ExecuteCustomPass(CommandBuffer cmd, Camera camera)
+        {
+            if(!_instance._isEnabled)
+                return;
+            
+            _instance.RenderCustomPass(cmd, camera);
+        }
+#endif
     }
 }

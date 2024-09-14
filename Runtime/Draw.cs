@@ -10,7 +10,7 @@ namespace Drawbug
     {
         private static Draw _instance;
 
-        private CommandBuffer _commandBuffer;
+        private DrawCommandBuffer _commandBuffer;
         private RenderData _renderData;
         private WireRender _wireRender;
 
@@ -20,11 +20,11 @@ namespace Drawbug
                 return;
             
             _instance = this;
-            _commandBuffer = new CommandBuffer(2048);
+            _commandBuffer = new DrawCommandBuffer(2048);
             _renderData = new RenderData()
             {
                 WireBuffer = new WireBuffer(2048),
-                StyleData = new NativeList<CommandBuffer.StyleData>(1024, Allocator.Persistent)
+                StyleData = new NativeList<DrawCommandBuffer.StyleData>(1024, Allocator.Persistent)
             };
             _wireRender = new WireRender();
         }
@@ -47,6 +47,14 @@ namespace Drawbug
         }
 
         internal void Render(UnityEngine.Rendering.CommandBuffer cmd)
+        {
+            if (_commandBuffer.HasData)
+            {
+                _wireRender.Render(cmd);
+            }
+        }
+        
+        internal void Render(UnityEngine.Rendering.RasterCommandBuffer cmd)
         {
             if (_commandBuffer.HasData)
             {
