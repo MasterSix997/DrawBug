@@ -13,6 +13,7 @@ namespace Drawbug
         private DrawCommandBuffer _commandBuffer;
         private RenderData _renderData;
         private WireRender _wireRender;
+        private SolidRender _solidRender;
 
         internal Draw()
         {
@@ -21,12 +22,14 @@ namespace Drawbug
             
             _instance = this;
             _commandBuffer = new DrawCommandBuffer(2048);
-            _renderData = new RenderData()
+            _renderData = new RenderData
             {
                 WireBuffer = new WireBuffer(2048),
-                StyleData = new NativeList<DrawCommandBuffer.StyleData>(1024, Allocator.Persistent)
+                SolidBuffer = new SolidBuffer(2048, 6144),
+                StyleData = new NativeList<DrawCommandBuffer.StyleData>(1024, Allocator.Persistent),
             };
             _wireRender = new WireRender();
+            _solidRender = new SolidRender();
         }
 
         internal unsafe void BuildData()
@@ -39,10 +42,12 @@ namespace Drawbug
 
         internal unsafe void GetDataResults()
         {
-            _renderData.GetCommandResults();
             if (_commandBuffer.HasData)
             {
-                _wireRender.UpdateBuffer(_renderData.WireBuffer, _renderData.StyleData.ToArray(Allocator.Temp), _renderData.WireBuffer.Length);
+                _renderData.GetCommandResults();
+                var styleData = _renderData.StyleData.ToArray(Allocator.Temp);
+                _wireRender.UpdateBuffer(_renderData.WireBuffer, styleData, _renderData.WireBuffer.Length);
+                _solidRender.UpdateBuffer(_renderData.SolidBuffer, styleData, _renderData.SolidBuffer.TrianglesLength);
             }
         }
 
@@ -51,6 +56,7 @@ namespace Drawbug
             if (_commandBuffer.HasData)
             {
                 _wireRender.Render(cmd);
+                _solidRender.Render(cmd);
             }
         }
         
@@ -59,6 +65,7 @@ namespace Drawbug
             if (_commandBuffer.HasData)
             {
                 _wireRender.Render(cmd);
+                _solidRender.Render(cmd);
             }
         }
 
@@ -68,6 +75,7 @@ namespace Drawbug
             _commandBuffer.Dispose();
             _renderData.Dispose();
             _wireRender.Dispose();
+            _solidRender.Dispose();
         }
         
         internal void Clear()
@@ -109,19 +117,17 @@ namespace Drawbug
             }
         }
         
-        public readonly struct ColorScope : IDisposable
+        public static DrawMode DrawMode
         {
-            private readonly Color _beforeColor;
-            
-            public ColorScope(Color newColor)
+            get
             {
-                _beforeColor = Color;
-                Color = newColor;
+                DrawbugManager.Initialize();
+                return _instance._commandBuffer.CurrentDrawMode;
             }
-            
-            public void Dispose()
+            set
             {
-                Color = _beforeColor;
+                DrawbugManager.Initialize();
+                _instance._commandBuffer.DrawMode(value);
             }
         }
         
@@ -141,15 +147,15 @@ namespace Drawbug
                 _setter.Invoke(_before);
             }
         }
-
-        public static ColorScope WithColorScope(Color color)
+        
+        public static DrawScope<Color> WithColor(Color newValue)
         {
-            return new ColorScope(color);
+            return new DrawScope<Color>(Color, newValue, previousValue => Color = previousValue);
         }
         
-        public static DrawScope<Color> WithColor(Color newColor)
+        public static DrawScope<DrawMode> WithDrawMode(DrawMode newValue)
         {
-            return new DrawScope<Color>(Color, newColor, beforeColor => Color = beforeColor);
+            return new DrawScope<DrawMode>(DrawMode, newValue, previousValue => DrawMode = previousValue);
         }
 
         public static void Line(float3 point1, float3 point2)
@@ -186,25 +192,25 @@ namespace Drawbug
             Profiler.EndSample();
         }
         
-        public static void Cube(float3 position, float scale)
+        public static void Box(float3 position, float scale)
         {
             DrawbugManager.Initialize();
             
-            _instance._commandBuffer.Cube(position, scale, quaternion.identity);
+            _instance._commandBuffer.Box(position, scale, quaternion.identity);
         }
         
-        public static void Cube(float3 position, float3 scale)
+        public static void Box(float3 position, float3 scale)
         {
             DrawbugManager.Initialize();
             
-            _instance._commandBuffer.Cube(position, scale, quaternion.identity);
+            _instance._commandBuffer.Box(position, scale, quaternion.identity);
         }
 
-        public static void Cube(float3 position, float3 scale, quaternion rotation)
+        public static void Box(float3 position, float3 scale, quaternion rotation)
         {
             DrawbugManager.Initialize();
             
-            _instance._commandBuffer.Cube(position, scale, rotation);
+            _instance._commandBuffer.Box(position, scale, rotation);
         }
 
     }

@@ -15,49 +15,49 @@ namespace Drawbug
             WireBuffer.Submit(linesPtr, arrayLength, _currentStyleId);
         }
 
-        private void AddCube(DrawCommandBuffer.CubeData cubeData)
+        private void AddBox(DrawCommandBuffer.BoxData boxData)
         {
             var data = new NativeArray<float3>(24, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             var i = 0;
 
             // Front
-            data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, -.5f, .5f) * cubeData.size) + cubeData.position);
-            data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, .5f, .5f) * cubeData.size) + cubeData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(-.5f, -.5f, .5f) * boxData.size + boxData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(-.5f, .5f, .5f) * boxData.size + boxData.position);
 
-            data[i++] = math.mul(cubeData.rotation, (new float3(.5f, -.5f, .5f) * cubeData.size) + cubeData.position);
-            data[i++] = math.mul(cubeData.rotation, (new float3(.5f, .5f, .5f) * cubeData.size) + cubeData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(.5f, -.5f, .5f) * boxData.size + boxData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(.5f, .5f, .5f) * boxData.size + boxData.position);
 
-            data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, .5f, .5f) * cubeData.size) + cubeData.position);
-            data[i++] = math.mul(cubeData.rotation, (new float3(.5f, .5f, .5f) * cubeData.size) + cubeData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(-.5f, .5f, .5f) * boxData.size + boxData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(.5f, .5f, .5f) * boxData.size + boxData.position);
 
-            data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, -.5f, .5f) * cubeData.size) + cubeData.position);
-            data[i++] = math.mul(cubeData.rotation, (new float3(.5f, -.5f, .5f) * cubeData.size) + cubeData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(-.5f, -.5f, .5f) * boxData.size + boxData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(.5f, -.5f, .5f) * boxData.size + boxData.position);
 
             // Back
-            data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, -.5f, -.5f) * cubeData.size) + cubeData.position);
-            data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, .5f, -.5f) * cubeData.size) + cubeData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(-.5f, -.5f, -.5f) * boxData.size + boxData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(-.5f, .5f, -.5f) * boxData.size + boxData.position);
 
-            data[i++] = math.mul(cubeData.rotation, (new float3(.5f, -.5f, -.5f) * cubeData.size) + cubeData.position);
-            data[i++] = math.mul(cubeData.rotation, (new float3(.5f, .5f, -.5f) * cubeData.size) + cubeData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(.5f, -.5f, -.5f) * boxData.size + boxData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(.5f, .5f, -.5f) * boxData.size + boxData.position);
 
-            data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, .5f, -.5f) * cubeData.size) + cubeData.position);
-            data[i++] = math.mul(cubeData.rotation, (new float3(.5f, .5f, -.5f) * cubeData.size) + cubeData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(-.5f, .5f, -.5f) * boxData.size + boxData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(.5f, .5f, -.5f) * boxData.size + boxData.position);
 
-            data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, -.5f, -.5f) * cubeData.size) + cubeData.position);
-            data[i++] = math.mul(cubeData.rotation, (new float3(.5f, -.5f, -.5f) * cubeData.size) + cubeData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(-.5f, -.5f, -.5f) * boxData.size + boxData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(.5f, -.5f, -.5f) * boxData.size + boxData.position);
 
             // Side Connections
-            data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, -.5f, -.5f) * cubeData.size) + cubeData.position);
-            data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, -.5f, .5f) * cubeData.size) + cubeData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(-.5f, -.5f, -.5f) * boxData.size + boxData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(-.5f, -.5f, .5f) * boxData.size + boxData.position);
 
-            data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, .5f, -.5f) * cubeData.size) + cubeData.position);
-            data[i++] = math.mul(cubeData.rotation, (new float3(-.5f, .5f, .5f) * cubeData.size) + cubeData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(-.5f, .5f, -.5f) * boxData.size + boxData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(-.5f, .5f, .5f) * boxData.size + boxData.position);
 
-            data[i++] = math.mul(cubeData.rotation, (new float3(.5f, -.5f, -.5f) * cubeData.size) + cubeData.position);
-            data[i++] = math.mul(cubeData.rotation, (new float3(.5f, -.5f, .5f) * cubeData.size) + cubeData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(.5f, -.5f, -.5f) * boxData.size + boxData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(.5f, -.5f, .5f) * boxData.size + boxData.position);
 
-            data[i++] = math.mul(cubeData.rotation, (new float3(.5f, .5f, -.5f) * cubeData.size) + cubeData.position);
-            data[i++] = math.mul(cubeData.rotation, (new float3(.5f, .5f, .5f) * cubeData.size) + cubeData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(.5f, .5f, -.5f) * boxData.size + boxData.position);
+            data[i++] = math.mul(boxData.rotation, new float3(.5f, .5f, .5f) * boxData.size + boxData.position);
 
             WireBuffer.Submit(data, 24, _currentStyleId);
             data.Dispose();

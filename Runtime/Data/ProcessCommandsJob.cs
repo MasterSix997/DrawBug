@@ -13,10 +13,13 @@ namespace Drawbug
         
         //Output
         public WireBuffer WireBuffer;
+        public SolidBuffer SolidBuffer;
         public NativeList<DrawCommandBuffer.StyleData> StyleData;
 
         private bool _firstStyle;
         private uint _currentStyleId;
+        
+        private DrawMode _currentDrawMode;
 
         private void AddStyle(DrawCommandBuffer.StyleData styleData)
         {
@@ -37,27 +40,26 @@ namespace Drawbug
                 case DrawCommandBuffer.Command.Style:
                     AddStyle(reader.ReadNext<DrawCommandBuffer.StyleData>());
                     break;
+                case DrawCommandBuffer.Command.DrawMode:
+                    _currentDrawMode = reader.ReadNext<DrawMode>();
+                    break;
                 case DrawCommandBuffer.Command.Line:
                     AddLine(reader.ReadNext<DrawCommandBuffer.LineData>());
                     break;
                 case DrawCommandBuffer.Command.Lines:
-                    int arrayLength = reader.ReadNext<int>();
-                    // var linesArray = new NativeArray<float3>(arrayLength, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-
-                    int sizeOfArray = UnsafeUtility.SizeOf<float3>() * arrayLength;
-
-                    // void* sourcePtr = reader.Ptr + reader.Offset;
-                    // void* destinationPtr = NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(linesArray);
-                    // UnsafeUtility.MemCpy(destinationPtr, sourcePtr, sizeOfArray);
+                    var arrayLength = reader.ReadNext<int>();
+                    var sizeOfArray = UnsafeUtility.SizeOf<float3>() * arrayLength;
                     
                     var linesPtr = (float3*)(reader.Ptr + reader.Offset);
                     AddLines(linesPtr, arrayLength);
                     reader.Offset += sizeOfArray;
-                    
-                    
                     break;
-                case DrawCommandBuffer.Command.Cube:
-                    AddCube(reader.ReadNext<DrawCommandBuffer.CubeData>());
+                case DrawCommandBuffer.Command.Box:
+                    var boxData = reader.ReadNext<DrawCommandBuffer.BoxData>();
+                    if (_currentDrawMode is DrawMode.Wire or DrawMode.Both)
+                        AddBox(boxData);
+                    if (_currentDrawMode is DrawMode.Solid or DrawMode.Both)
+                        AddSolidBox(boxData);
                     break;
                 default:
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -71,8 +73,10 @@ namespace Drawbug
         public void Execute()
         {
             WireBuffer.Clear();
+            SolidBuffer.Clear();
             StyleData.Clear();
             _firstStyle = true;
+            _currentDrawMode = DrawMode.Wire;
             
             var reader = Buffer->AsReader();
             while (reader.Offset < reader.Size)

@@ -8,6 +8,7 @@ namespace Drawbug
     internal struct RenderData : IDisposable
     {
         internal WireBuffer WireBuffer;
+        internal SolidBuffer SolidBuffer;
         internal NativeList<DrawCommandBuffer.StyleData> StyleData;
         
         private JobHandle _submitJob;
@@ -22,6 +23,7 @@ namespace Drawbug
             }
             
             WireBuffer.Dispose();
+            SolidBuffer.Dispose();
             StyleData.Dispose();
         }
 
@@ -36,6 +38,7 @@ namespace Drawbug
             {
                 Buffer = buffer,
                 WireBuffer = WireBuffer,
+                SolidBuffer = SolidBuffer,
                 StyleData = StyleData,
             }.Schedule();
         }

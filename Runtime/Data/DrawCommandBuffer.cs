@@ -4,9 +4,17 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
+// ReSharper disable InconsistentNaming
 
 namespace Drawbug
 {
+    public enum DrawMode
+    {
+        Wire,
+        Solid,
+        Both
+    } 
+    
     [BurstCompile]
     internal struct DrawCommandBuffer : IDisposable
     {
@@ -20,6 +28,9 @@ namespace Drawbug
             
             _hasPendingStyle = default;
             PendingStyle = default;
+
+            CurrentDrawMode = Drawbug.DrawMode.Wire;
+            
             ResetStyle();
         }
 
@@ -38,15 +49,18 @@ namespace Drawbug
         {
             _buffer.Reset();
             
+            CurrentDrawMode = Drawbug.DrawMode.Wire;
+            
             ResetStyle();
         }
         
         internal enum Command
         {
             Style,
+            DrawMode,
             Line,
             Lines,
-            Cube
+            Box
         }
         
         internal struct LineData
@@ -58,7 +72,7 @@ namespace Drawbug
             public Vector3 a, b;
         }
         
-        internal struct CubeData
+        internal struct BoxData
         {
             public float3 position;
             public float3 size;
@@ -146,6 +160,19 @@ namespace Drawbug
         
         //=========================================
 
+        internal DrawMode CurrentDrawMode;
+        
+        internal void DrawMode(DrawMode drawMode)
+        {
+            Reserve<DrawMode>();
+            Add(Command.DrawMode);
+            Add(drawMode);
+            
+            CurrentDrawMode = drawMode;
+        }
+        
+        //=========================================
+
         internal void Line(float3 a, float3 b)
         {
             Reserve<LineData>();
@@ -221,11 +248,11 @@ namespace Drawbug
             }
         }
 
-        internal void Cube(float3 position, float3 size, quaternion rotation)
+        internal void Box(float3 position, float3 size, quaternion rotation)
         {
-            Reserve<CubeData>();
-            Add(Command.Cube);
-            Add(new CubeData
+            Reserve<BoxData>();
+            Add(Command.Box);
+            Add(new BoxData
             {
                 position = position,
                 size = size,

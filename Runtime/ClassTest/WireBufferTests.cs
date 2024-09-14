@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Drawbug.ClassTest
 {
-    public class WireBufferTests : MonoBehaviour
+    public class SolidBufferTests : MonoBehaviour
     {
         public int startBufferLength = 1024;
         public bool fillBufferWithArray = true;
