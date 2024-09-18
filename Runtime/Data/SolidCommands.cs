@@ -25,29 +25,14 @@ namespace Drawbug
             var point7 = new float3(position.x + size.x, position.y + size.y, position.z + size.z);
             var point8 = new float3(position.x + size.x, position.y - size.y, position.z + size.z);
 
-            point1 = math.mul(rotation, point1 - position);
-            point1 += position;
-
-            point2 = math.mul(rotation, point2 - position);
-            point2 += position;
-
-            point3 = math.mul(rotation, point3 - position);
-            point3 += position;
-
-            point4 = math.mul(rotation, point4 - position);
-            point4 += position;
-
-            point5 = math.mul(rotation, point5 - position);
-            point5 += position;
-
-            point6 = math.mul(rotation, point6 - position);
-            point6 += position;
-
-            point7 = math.mul(rotation, point7 - position);
-            point7 += position;
-
-            point8 = math.mul(rotation, point8 - position);
-            point8 += position;
+            point1 = math.mul(rotation, point1 - position) + position;
+            point2 = math.mul(rotation, point2 - position) + position;
+            point3 = math.mul(rotation, point3 - position) + position;
+            point4 = math.mul(rotation, point4 - position) + position;
+            point5 = math.mul(rotation, point5 - position) + position;
+            point6 = math.mul(rotation, point6 - position) + position;
+            point7 = math.mul(rotation, point7 - position) + position;
+            point8 = math.mul(rotation, point8 - position) + position;
             
             SolidBuffer.Submit(point1, _currentStyleId);
             SolidBuffer.Submit(point2, _currentStyleId);
@@ -58,11 +43,11 @@ namespace Drawbug
             SolidBuffer.Submit(point7, _currentStyleId);
             SolidBuffer.Submit(point8, _currentStyleId);
             
-            //   5---------6
-            // 1---------2 |
+            //   6---------7
+            // 2---------3 |
             // | |       | |
-            // | 4_______|_7
-            // 0_________3
+            // | 5_______|_8
+            // 1_________4
 
             //Front Face
             var triangles = new NativeArray<int>(36, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
