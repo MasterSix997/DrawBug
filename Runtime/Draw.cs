@@ -108,7 +108,7 @@ namespace Drawbug
             get
             {
                 DrawbugManager.Initialize();
-                return _instance._commandBuffer.PendingStyle.foward;
+                return _instance._commandBuffer.PendingStyle.forward;
             }
             set
             {
@@ -151,6 +151,11 @@ namespace Drawbug
         public static DrawScope<Color> WithColor(Color newValue)
         {
             return new DrawScope<Color>(Color, newValue, previousValue => Color = previousValue);
+        }
+        
+        public static DrawScope<bool> WithForward(bool newValue = true)
+        {
+            return new DrawScope<bool>(Forward, newValue, previousValue => Forward = previousValue);
         }
         
         public static DrawScope<DrawMode> WithDrawMode(DrawMode newValue)

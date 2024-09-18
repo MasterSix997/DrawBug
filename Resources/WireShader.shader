@@ -7,32 +7,59 @@
 
     SubShader
     {
-//        Blend SrcAlpha OneMinusSrcAlpha
-//		ZWrite Off
-//		Offset -3, -50
-		Tags { "IgnoreProjector"="True" "RenderType"="Overlay" }
-//		 With line joins some triangles can actually end up backwards, so disable culling
-//		Cull Off
-
-        //Front
+		Tags { "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Overlay" }
+		ZWrite Off
+        Blend SrcAlpha OneMinusSrcAlpha
+		Cull Off
+		
         Pass
         {
-//            ZTest LEqual
+            Name "Normal"
+            ZTest LEqual
             
             CGPROGRAM
-            #include "line_common.cginc"
+            #include "drawbug_common.cginc"
 
-            interpolator vert (uint vertexID: SV_VertexID)
+            interpolator vert (const uint vertex_id: SV_VertexID)
             {
                 interpolator o;
 
-                float3 pos = _Positions[vertexID].position;
-
-                o.pos = mul(UNITY_MATRIX_VP, float4(pos, 1.0f));
-                o.color = get_color(vertexID);
+                float3 pos = _Positions[vertex_id].position;
+                o.position = mul(UNITY_MATRIX_VP, float4(pos, 1.0f));
                 
-                //if(_LineData[_Positions[vertexID].data_index].forward)
-                    //o.color = float4(0, 0, 0, 0);
+                o.color = get_style(vertex_id).color;
+                
+                return o;
+            }
+
+            fixed4 frag (interpolator i) : SV_Target
+            {
+                return i.color;
+            }
+            ENDCG
+        }
+
+        Pass
+        {
+            Name "Occluded"
+            ZTest Greater
+            
+            CGPROGRAM
+            #include "drawbug_common.cginc"
+
+            interpolator vert (const uint vertex_id: SV_VertexID)
+            {
+                interpolator o;
+
+                float3 pos = _Positions[vertex_id].position;
+                o.position = mul(UNITY_MATRIX_VP, float4(pos, 1.0f));
+
+                style_data style = get_style(vertex_id);
+
+                if (style.forward)
+                    o.color = style.color;
+                else
+                    o.color = float4(style.color.rgb, style.color.a * 0.05);
                 
                 return o;
             }

@@ -1,6 +1,6 @@
 ﻿struct interpolator
 {
-    float4 pos : SV_POSITION;
+    float4 position : SV_POSITION;
     float4 color : COLOR;
 };
 
@@ -10,17 +10,17 @@ struct position_data
     uint data_index;
 };
 
-struct line_data
+struct style_data
 {
     float4 color : COLOR;
     bool forward;
 };
 
 StructuredBuffer<position_data> _Positions;
-StructuredBuffer<line_data> _StyleData;
+StructuredBuffer<style_data> _StyleData;
 
-float4 get_color(uint vertexID)
+style_data get_style(const uint vertex_id)
 {
-    return _StyleData[_Positions[vertexID].data_index].color;
+    return _StyleData[_Positions[vertex_id].data_index];
 }
 

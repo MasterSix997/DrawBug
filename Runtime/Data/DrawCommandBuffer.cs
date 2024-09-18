@@ -82,7 +82,7 @@ namespace Drawbug
         internal struct StyleData
         {
             public Color color;
-            public bool foward;
+            public bool forward;
         }
         
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -133,7 +133,7 @@ namespace Drawbug
         internal void StyleForward(bool forward)
         {
             _hasPendingStyle = true;
-            PendingStyle.foward = forward;
+            PendingStyle.forward = forward;
         }
 
         private void ApplyPendingStyle()
@@ -154,7 +154,7 @@ namespace Drawbug
             PendingStyle = new StyleData
             {
                 color = Color.white,
-                foward = false,
+                forward = false
             };
         }
         
