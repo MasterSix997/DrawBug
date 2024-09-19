@@ -24,7 +24,6 @@ namespace Drawbug
         {
             if (trianglesCount < 3)
             {
-                Debug.LogWarning("No Triangle Data");
                 CanRender = false;
                 return;
             }

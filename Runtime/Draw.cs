@@ -27,7 +27,11 @@ namespace Drawbug
                 WireBuffer = new WireBuffer(2048),
                 SolidBuffer = new SolidBuffer(2048, 6144),
                 StyleData = new NativeList<DrawCommandBuffer.StyleData>(1024, Allocator.Persistent),
+                //TODO)) Within the job, when you exceed the position or triangle buffer capacity, Submit the data and subtract the amount of data sent for return
+                TempFloat3Buffer = new NativeArray<float3>(2048, Allocator.Persistent, NativeArrayOptions.UninitializedMemory),
+                TempTriangleBuffer = new NativeArray<int>(10000, Allocator.Persistent, NativeArrayOptions.UninitializedMemory),
             };
+            _renderData.CreatePtr();
             _wireRender = new WireRender();
             _solidRender = new SolidRender();
         }
@@ -197,6 +201,34 @@ namespace Drawbug
             Profiler.EndSample();
         }
         
+        public static void Rectangle(float3 position, float3 scale, quaternion rotation)
+        {
+            DrawbugManager.Initialize();
+            
+            _instance._commandBuffer.Rectangle(position, scale, rotation);
+        }
+        
+        public static void Circle(float3 position, float radius, quaternion rotation)
+        {
+            DrawbugManager.Initialize();
+            
+            _instance._commandBuffer.Circle(position, radius, rotation);
+        }
+        
+        public static void HollowCircle(float3 position, float innerRadius, float outerRadius, quaternion rotation)
+        {
+            DrawbugManager.Initialize();
+            
+            _instance._commandBuffer.HollowCircle(position, innerRadius, outerRadius, rotation);
+        }
+        
+        public static void Capsule(float3 position, float2 size, quaternion rotation, bool isVertical)
+        {
+            DrawbugManager.Initialize();
+            
+            _instance._commandBuffer.Capsule(position, size, rotation, isVertical);
+        }
+        
         public static void Box(float3 position, float scale)
         {
             DrawbugManager.Initialize();
@@ -218,5 +250,25 @@ namespace Drawbug
             _instance._commandBuffer.Box(position, scale, rotation);
         }
 
+        public static void Sphere(float3 position, float radius)
+        {
+            DrawbugManager.Initialize();
+            
+            _instance._commandBuffer.Sphere(position, radius);
+        }
+        
+        public static void Cylinder(float3 position, float radius, float height, quaternion rotation)
+        {
+            DrawbugManager.Initialize();
+            
+            _instance._commandBuffer.Cylinder(position, radius, height, rotation);
+        }
+        
+        public static void Capsule3D(float3 position, float radius, float height, quaternion rotation)
+        {
+            DrawbugManager.Initialize();
+            
+            _instance._commandBuffer.Capsule3D(position, radius, height, rotation);
+        }
     }
 }

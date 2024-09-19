@@ -67,8 +67,15 @@ namespace Drawbug
             _bufferData->Submit(point, dataIndex);
         }
         
-        [BurstCompile]
         internal void Submit(NativeArray<float3> points, int length, uint dataIndex)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+#endif
+            _bufferData->Submit(points, length, dataIndex);
+        }
+        
+        internal void Submit(float3* points, int length, uint dataIndex)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
@@ -85,12 +92,21 @@ namespace Drawbug
         }
         
         [BurstCompile]
-        internal void Submit(NativeArray<int> vertices, int length)
+        internal void Submit(NativeArray<int> triangles, int length)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-            _bufferData->Submit(vertices, length);
+            _bufferData->Submit(triangles, length);
+        }
+        
+        [BurstCompile]
+        internal void Submit(int* triangles, int length)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+#endif
+            _bufferData->Submit(triangles, length);
         }
 
         [BurstDiscard]
@@ -174,6 +190,14 @@ namespace Drawbug
                 _verticesBuffer->Submit(new PositionData { Position = points[i], DataIndex = dataIndex });
             }
         }
+        
+        public void Submit(float3* points, int length, uint dataIndex)
+        {
+            for (var i = 0; i < length; i++)
+            {
+                _verticesBuffer->Submit(new PositionData { Position = points[i], DataIndex = dataIndex });
+            }
+        }
 
         public void Submit(int triangle)
         {
@@ -181,6 +205,11 @@ namespace Drawbug
         }
 
         public void Submit(NativeArray<int> triangles, int length)
+        {
+            _trianglesBuffer->Submit(triangles, length);
+        }
+        
+        public void Submit(int* triangles, int length)
         {
             _trianglesBuffer->Submit(triangles, length);
         }
@@ -263,6 +292,16 @@ namespace Drawbug
         {
             EnsureCapacity(length);
             var valuesPtr = (T*)values.GetUnsafeReadOnlyPtr();
+            for (var i = 0; i < length; i++)
+            {
+                _data[_currentLength++] = valuesPtr[i];
+            }
+        }
+        
+        [BurstCompile]
+        public void Submit(T* valuesPtr, int length)
+        {
+            EnsureCapacity(length);
             for (var i = 0; i < length; i++)
             {
                 _data[_currentLength++] = valuesPtr[i];

@@ -60,7 +60,14 @@ namespace Drawbug
             DrawMode,
             Line,
             Lines,
-            Box
+            Rectangle,
+            Circle,
+            HollowCircle,
+            Capsule,
+            Box, 
+            Sphere,
+            Cylinder,
+            Capsule3D,
         }
         
         internal struct LineData
@@ -72,10 +79,47 @@ namespace Drawbug
             public Vector3 a, b;
         }
         
+        internal struct CircleData
+        {
+            public float3 position;
+            public quaternion rotation;
+            public float radius;
+        }
+        
+        internal struct HollowCircleData
+        {
+            public float3 position;
+            public quaternion rotation;
+            public float innerRadius;
+            public float outerRadius;
+        }
+        
+        internal struct CapsuleData
+        {
+            public float3 position;
+            public float2 size;
+            public quaternion rotation;
+            public bool isVertical;
+        }
+        
         internal struct BoxData
         {
             public float3 position;
             public float3 size;
+            public quaternion rotation;
+        }
+        
+        internal struct SphereData
+        {
+            public float3 position;
+            public float radius;
+        }
+        
+        internal struct CylinderData
+        {
+            public float3 position;
+            public float radius;
+            public float height;
             public quaternion rotation;
         }
         
@@ -247,6 +291,56 @@ namespace Drawbug
                 _buffer.Length += sizeOfArray;
             }
         }
+        
+        internal void Rectangle(float3 position, float3 size, quaternion rotation)
+        {
+            Reserve<BoxData>();
+            Add(Command.Rectangle);
+            Add(new BoxData
+            {
+                position = position,
+                size = size,
+                rotation = rotation
+            });
+        }
+        
+        internal void Circle(float3 position, float radius, quaternion rotation)
+        {
+            Reserve<CircleData>();
+            Add(Command.Circle);
+            Add(new CircleData
+            {
+                position = position,
+                radius = radius,
+                rotation = rotation
+            });
+        }
+        
+        internal void HollowCircle(float3 position, float innerRadius, float outerRadius, quaternion rotation)
+        {
+            Reserve<HollowCircleData>();
+            Add(Command.HollowCircle);
+            Add(new HollowCircleData
+            {
+                position = position,
+                innerRadius = innerRadius,
+                outerRadius = outerRadius,
+                rotation = rotation
+            });
+        }
+        
+        internal void Capsule(float3 position, float2 size, quaternion rotation, bool isVertical)
+        {
+            Reserve<CapsuleData>();
+            Add(Command.Capsule);
+            Add(new CapsuleData
+            {
+                position = position,
+                size = size,
+                rotation = rotation,
+                isVertical = isVertical
+            });
+        }
 
         internal void Box(float3 position, float3 size, quaternion rotation)
         {
@@ -256,6 +350,43 @@ namespace Drawbug
             {
                 position = position,
                 size = size,
+                rotation = rotation
+            });
+        }
+        
+        internal void Sphere(float3 position, float radius)
+        {
+            Reserve<SphereData>();
+            Add(Command.Sphere);
+            Add(new SphereData
+            {
+                position = position,
+                radius = radius,
+            });
+        }
+        
+        internal void Cylinder(float3 position, float radius, float height, quaternion rotation)
+        {
+            Reserve<CylinderData>();
+            Add(Command.Cylinder);
+            Add(new CylinderData
+            {
+                position = position,
+                radius = radius,
+                height = height,
+                rotation = rotation
+            });
+        }
+        
+        internal void Capsule3D(float3 position, float radius, float height, quaternion rotation)
+        {
+            Reserve<CylinderData>();
+            Add(Command.Capsule3D);
+            Add(new CylinderData
+            {
+                position = position,
+                radius = radius,
+                height = height,
                 rotation = rotation
             });
         }
