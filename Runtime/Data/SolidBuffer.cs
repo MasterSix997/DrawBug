@@ -50,6 +50,18 @@ namespace Drawbug
         internal int VerticesCapacity => _bufferData->VerticesCapacity;
         internal int TrianglesLength => _bufferData->TrianglesLength;
         internal int TrianglesCapacity => _bufferData->TrianglesCapacity;
+        
+        internal bool UseMatrix => _bufferData->UseMatrix;
+
+        internal float4x4 Matrix
+        {
+            get => _bufferData->Matrix;
+            set
+            {
+                _bufferData->Matrix = value;
+                _bufferData->UseMatrix = !value.Equals(float4x4.identity);
+            }
+        }
 
         internal void Clear()
         {
@@ -157,6 +169,9 @@ namespace Drawbug
         internal int VerticesCapacity => _verticesBuffer->Capacity;
         internal int TrianglesLength => _trianglesBuffer->Length;
         internal int TrianglesCapacity => _trianglesBuffer->Capacity;
+        
+        internal bool UseMatrix;
+        internal float4x4 Matrix;
 
         public UnsafeSolidBuffer(int initialVerticesCapacity, int initialTrianglesCapacity, ref Allocator allocator)
         {
@@ -170,24 +185,38 @@ namespace Drawbug
             _trianglesBuffer = (UnsafeBuffer<int>*)UnsafeUtility.Malloc(
                 sizeof(UnsafeBuffer<int>), UnsafeUtility.AlignOf<UnsafeBuffer<int>>(), allocator);
             *_trianglesBuffer = new UnsafeBuffer<int>(initialTrianglesCapacity, ref allocator);
+            
+            UseMatrix = false;
+            Matrix = float4x4.identity;
         }
 
         public void Clear()
         {
             _verticesBuffer->Clear();
             _trianglesBuffer->Clear();
+            
+            UseMatrix = false;
+            Matrix = float4x4.identity;
         }
 
         public void Submit(float3 point, uint dataIndex)
         {
-            _verticesBuffer->Submit(new PositionData { Position = point, DataIndex = dataIndex });
+            _verticesBuffer->Submit(new PositionData
+            {
+                Position = UseMatrix ? math.mul(Matrix, new float4(point, 1)).xyz : point, 
+                DataIndex = dataIndex
+            });
         }
 
         public void Submit(NativeArray<float3> points, int length, uint dataIndex)
         {
             for (var i = 0; i < length; i++)
             {
-                _verticesBuffer->Submit(new PositionData { Position = points[i], DataIndex = dataIndex });
+                _verticesBuffer->Submit(new PositionData
+                {
+                    Position = UseMatrix ? math.mul(Matrix, new float4(points[i], 1)).xyz : points[i], 
+                    DataIndex = dataIndex
+                });
             }
         }
         
@@ -195,7 +224,11 @@ namespace Drawbug
         {
             for (var i = 0; i < length; i++)
             {
-                _verticesBuffer->Submit(new PositionData { Position = points[i], DataIndex = dataIndex });
+                _verticesBuffer->Submit(new PositionData
+                {
+                    Position = UseMatrix ? math.mul(Matrix, new float4(points[i], 1)).xyz : points[i],
+                    DataIndex = dataIndex
+                });
             }
         }
 

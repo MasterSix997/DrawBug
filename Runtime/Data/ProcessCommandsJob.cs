@@ -1,4 +1,5 @@
 ﻿using System;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
@@ -7,6 +8,7 @@ using UnityEngine;
 
 namespace Drawbug
 {
+    [BurstCompile]
     internal unsafe partial struct ProcessCommandsJob : IJob
     {
         //Input
@@ -21,6 +23,7 @@ namespace Drawbug
         private uint _currentStyleId;
         
         private DrawMode _currentDrawMode;
+        private Matrix4x4 _currentMatrix;
         
         [NativeDisableUnsafePtrRestriction] public float3* temp3;
         [NativeDisableUnsafePtrRestriction] public int* tempT;
@@ -46,6 +49,11 @@ namespace Drawbug
                     break;
                 case DrawCommandBuffer.Command.DrawMode:
                     _currentDrawMode = reader.ReadNext<DrawMode>();
+                    break;
+                case DrawCommandBuffer.Command.Matrix:
+                    _currentMatrix = reader.ReadNext<float4x4>();
+                    WireBuffer.Matrix = _currentMatrix;
+                    SolidBuffer.Matrix = _currentMatrix;
                     break;
                 case DrawCommandBuffer.Command.Line:
                     AddLine(reader.ReadNext<DrawCommandBuffer.LineData>());
@@ -121,7 +129,7 @@ namespace Drawbug
                 //     break;
                 default:
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                    throw new ArgumentOutOfRangeException(command.ToString(), "Unknown command");
+                    throw new Exception("Unknown command");
 #else
 				    break;
 #endif
@@ -135,6 +143,7 @@ namespace Drawbug
             StyleData.Clear();
             _firstStyle = true;
             _currentDrawMode = DrawMode.Wire;
+            _currentMatrix = Matrix4x4.identity;
             
             var reader = Buffer->AsReader();
             while (reader.Offset < reader.Size)

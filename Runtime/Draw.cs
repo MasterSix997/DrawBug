@@ -91,6 +91,8 @@ namespace Drawbug
         {
             DrawbugManager.Initialize();
             _instance._commandBuffer.ResetStyle();
+            _instance._commandBuffer.DrawMode(DrawMode.Wire);
+            _instance._commandBuffer.Matrix(float4x4.identity);
         }
 
         public static Color Color
@@ -135,6 +137,20 @@ namespace Drawbug
             }
         }
         
+        public static float4x4 Matrix
+        {
+            get
+            {
+                DrawbugManager.Initialize();
+                return _instance._commandBuffer.CurrentMatrix;
+            }
+            set
+            {
+                DrawbugManager.Initialize();
+                _instance._commandBuffer.Matrix(value);
+            }
+        }
+        
         public readonly struct DrawScope<T> : IDisposable
         {
             private readonly T _before;
@@ -165,6 +181,21 @@ namespace Drawbug
         public static DrawScope<DrawMode> WithDrawMode(DrawMode newValue)
         {
             return new DrawScope<DrawMode>(DrawMode, newValue, previousValue => DrawMode = previousValue);
+        }
+        
+        public static DrawScope<float4x4> WithMatrix(float4x4 newValue)
+        {
+            return new DrawScope<float4x4>(Matrix, newValue, previousValue => Matrix = previousValue);
+        }
+        
+        public static DrawScope<float4x4> InLocalSpace(Transform transform)
+        {
+            return new DrawScope<float4x4>(Matrix, transform.localToWorldMatrix, previousValue => Matrix = previousValue);
+        }
+        
+        public static DrawScope<float4x4> InPosition(float3 position)
+        {
+            return new DrawScope<float4x4>(Matrix, float4x4.TRS(position, quaternion.identity, new float3(1)), previousValue => Matrix = previousValue);
         }
 
         public static void Line(float3 point1, float3 point2)
@@ -231,6 +262,10 @@ namespace Drawbug
         
         public static void Box(float3 position, float scale)
         {
+            if (Time.inFixedTimeStep)
+            {
+                
+            }
             DrawbugManager.Initialize();
             
             _instance._commandBuffer.Box(position, scale, quaternion.identity);

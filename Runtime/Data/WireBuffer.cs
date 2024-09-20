@@ -51,6 +51,18 @@ namespace Drawbug
         internal int Length => _bufferData->Length;
         internal int Capacity => _bufferData->Capacity;
 
+        internal bool UseMatrix => _bufferData->UseMatrix;
+
+        internal float4x4 Matrix
+        {
+            get => _bufferData->Matrix;
+            set
+            {
+                _bufferData->Matrix = value;
+                _bufferData->UseMatrix = !value.Equals(float4x4.identity);
+            }
+        }
+
         internal void Clear()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -168,7 +180,6 @@ namespace Drawbug
         private int _bufferCapacity;
 
         private Allocator _allocatorLabel;
-        
 
         public UnsafeWireBuffer(int initialCapacity, ref Allocator allocator)
         {
@@ -177,14 +188,21 @@ namespace Drawbug
             _currentLength = 0;
             _bufferCapacity = initialCapacity;
             _allocatorLabel = allocator;
+            UseMatrix = false;
+            Matrix = float4x4.identity;
         }
         
         internal int Length => _currentLength;
         internal int Capacity => _bufferCapacity;
+        
+        internal bool UseMatrix;
+        internal float4x4 Matrix;
 
         internal void Clear()
         {
             _currentLength = 0;
+            UseMatrix = false;
+            Matrix = float4x4.identity;
         }
         
         private void EnsureCapacity(int additionalCapacity)
@@ -192,7 +210,6 @@ namespace Drawbug
             if (_currentLength + additionalCapacity > _bufferCapacity)
             {
                 var newCapacity = Math.Max(_bufferCapacity * 2, _currentLength + additionalCapacity);
-                Debug.Log($"Trying to increase the buffer size from '{_bufferCapacity}' to '{newCapacity}'");
         
                 // Aloca um novo bloco de memória
                 PositionData* newBufferPtr = (PositionData*)UnsafeUtility.Malloc(newCapacity * sizeof(PositionData), UnsafeUtility.AlignOf<PositionData>(), _allocatorLabel);
@@ -206,8 +223,6 @@ namespace Drawbug
                 // Atualiza o ponteiro do buffer e seu tamanho
                 _bufferData = newBufferPtr;
                 _bufferCapacity = newCapacity;
-
-                Debug.Log("Successfully increased size of buffer to: " + _bufferCapacity);
             }
         }
         
@@ -216,9 +231,9 @@ namespace Drawbug
         {
             EnsureCapacity(2);
             _bufferData[_currentLength].DataIndex = dataIndex;
-            _bufferData[_currentLength++].Position = point1;
+            _bufferData[_currentLength++].Position = UseMatrix ? math.mul(Matrix, new float4(point1, 1)).xyz : point1;
             _bufferData[_currentLength].DataIndex = dataIndex;
-            _bufferData[_currentLength++].Position = point2;
+            _bufferData[_currentLength++].Position = UseMatrix ? math.mul(Matrix, new float4(point2, 1)).xyz : point2;
         }
         
         [BurstCompile]
@@ -259,10 +274,10 @@ namespace Drawbug
             for (var i = 0; i < pairsCount; i++)
             {
                 var index = i * 2;
-                _bufferData[_currentLength].Position = points[index];
+                _bufferData[_currentLength].Position = UseMatrix ? math.mul(Matrix, new float4(points[index], 1)).xyz : points[index];
                 _bufferData[_currentLength].DataIndex = dataIndex;
                 _currentLength++;
-                _bufferData[_currentLength].Position = points[index + 1];
+                _bufferData[_currentLength].Position = UseMatrix ? math.mul(Matrix, new float4(points[index + 1], 1)).xyz : points[index + 1];
                 _bufferData[_currentLength].DataIndex = dataIndex;
                 _currentLength++;
             }

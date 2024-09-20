@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -15,6 +16,7 @@ namespace Drawbug
         Both
     } 
     
+    [StructLayout(LayoutKind.Sequential)]
     [BurstCompile]
     internal struct DrawCommandBuffer : IDisposable
     {
@@ -30,6 +32,7 @@ namespace Drawbug
             PendingStyle = default;
 
             CurrentDrawMode = Drawbug.DrawMode.Wire;
+            CurrentMatrix = float4x4.identity;
             
             ResetStyle();
         }
@@ -58,6 +61,7 @@ namespace Drawbug
         {
             Style,
             DrawMode,
+            Matrix,
             Line,
             Lines,
             Rectangle,
@@ -215,6 +219,17 @@ namespace Drawbug
             CurrentDrawMode = drawMode;
         }
         
+        internal float4x4 CurrentMatrix;
+        
+        internal void Matrix(float4x4 matrix)
+        {
+            Reserve<float4x4>();
+            Add(Command.Matrix);
+            Add(matrix);
+
+            CurrentMatrix = matrix;
+        }
+        
         //=========================================
 
         internal void Line(float3 a, float3 b)
@@ -242,6 +257,7 @@ namespace Drawbug
             }
         }
         
+        [BurstDiscard]
         internal void Lines(float3[] linesArray)
         {
             var arrayLength = linesArray.Length;

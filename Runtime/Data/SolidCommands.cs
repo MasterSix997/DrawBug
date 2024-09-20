@@ -490,7 +490,7 @@ namespace Drawbug
             var count = new int2();
             if (height > radius * 2)
             {
-                count += SolidCylinderShape(count, position, size.x,  size.y, rotation);
+                count += SolidCylinderShape(count, position, size.x, (size.y - size.x) * 2, rotation);
                 count += SolidDomeShape(count, position + math.mul(rotation, new float3(0, size.y - size.x, 0)), radius, rotation);
                 count += SolidDomeShape(count, position + math.mul(rotation, new float3(0, -size.y + size.x, 0)), radius, math.mul(rotation, quaternion.RotateX(math.radians(180))));
             }
