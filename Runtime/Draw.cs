@@ -2,7 +2,6 @@
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Profiling;
 
 namespace Drawbug
 {
@@ -11,17 +10,26 @@ namespace Drawbug
         private static Draw _instance;
 
         private DrawCommandBuffer _commandBuffer;
+        private DrawCommandBuffer _fixedCommandBuffer;
         private RenderData _renderData;
-        private WireRender _wireRender;
-        private SolidRender _solidRender;
+        private readonly WireRender _wireRender;
+        private readonly SolidRender _solidRender;
 
+        private DrawCommandBufferTimed _timedCommandBuffer;
+        private float _currentDuration = 0;
+        
         internal Draw()
         {
             if(_instance != null)
                 return;
             
             _instance = this;
+            
             _commandBuffer = new DrawCommandBuffer(2048);
+            _fixedCommandBuffer = new DrawCommandBuffer(1024);
+            _timedCommandBuffer = new DrawCommandBufferTimed(200);
+            _currentDuration = 0;
+            
             _renderData = new RenderData
             {
                 WireBuffer = new WireBuffer(2048),
@@ -38,13 +46,18 @@ namespace Drawbug
 
         internal unsafe void BuildData()
         {
+            if (_fixedCommandBuffer.HasData)
+                _commandBuffer.AnotherBuffer(_fixedCommandBuffer);
+
+            _timedCommandBuffer.SendCommandsToBuffer(ref _commandBuffer);
+                
             if (_commandBuffer.HasData)
             {
                 _renderData.ProcessCommands(_commandBuffer.GetBuffer());
             }
         }
 
-        internal unsafe void GetDataResults()
+        internal void GetDataResults()
         {
             if (_commandBuffer.HasData)
             {
@@ -75,80 +88,120 @@ namespace Drawbug
 
         public void Dispose()
         {
-            _instance = null;
             _commandBuffer.Dispose();
+            _fixedCommandBuffer.Dispose();
+            _timedCommandBuffer.Dispose();
             _renderData.Dispose();
             _wireRender.Dispose();
             _solidRender.Dispose();
+            _instance = null;
         }
         
         internal void Clear()
         {
             _commandBuffer.Clear();
+            _currentDuration = 0;
+        }
+        
+        internal void ClearFixed()
+        {
+            _fixedCommandBuffer.Clear();
+            _currentDuration = 0;
+        }
+        
+        public void UpdateTimedBuffers(float deltaTime)
+        {
+            _timedCommandBuffer.UpdateTimes(deltaTime);
+            Debug.Log(_timedCommandBuffer.ActiveBuffersCount);
         }
 
-        public static void Reset()
+        private static unsafe DrawCommandBuffer* CurrentCommandBuffer
         {
-            DrawbugManager.Initialize();
-            _instance._commandBuffer.ResetStyle();
-            _instance._commandBuffer.DrawMode(DrawMode.Wire);
-            _instance._commandBuffer.Matrix(float4x4.identity);
+            get
+            {
+                DrawbugManager.Initialize();
+                var currentDuration = _instance._currentDuration;
+
+                if (currentDuration > 0)
+                    return _instance._timedCommandBuffer.GetBuffer(currentDuration);
+
+                fixed (DrawCommandBuffer* fixedBuffer = &_instance._fixedCommandBuffer)
+                fixed (DrawCommandBuffer* commandBuffer = &_instance._commandBuffer)
+                {
+                    return Time.inFixedTimeStep ? fixedBuffer : commandBuffer;
+                }
+            }
         }
 
-        public static Color Color
+        // private static ref DrawCommandBuffer CurrentCommandBuffer
+        // {
+        //     get
+        //     {
+        //         DrawbugManager.Initialize();
+        //         var currentDuration = _instance._currentDuration;
+        //         if (currentDuration > 0)
+        //         {
+        //             var lastTimedBuffer = ref _instance._timedCommandBuffer[^1];
+        //             
+        //             if (lastTimedBuffer.Item2 == currentDuration)
+        //             {
+        //                 return ref lastTimedBuffer;
+        //             }
+        //
+        //             _instance._timedCommandBuffer.Add((new DrawCommandBuffer(512), currentDuration));
+        //             return ref _instance._timedCommandBuffer[^1];
+        //         }
+        //         
+        //         return ref Time.inFixedTimeStep ? 
+        //             ref _instance._fixedCommandBuffer : 
+        //             ref _instance._commandBuffer;
+        //     }
+        // }
+
+        public static unsafe void Reset()
+        {
+            CurrentCommandBuffer->ResetStyle();
+            CurrentCommandBuffer->DrawMode(DrawMode.Wire);
+            CurrentCommandBuffer->Matrix(float4x4.identity);
+            _instance._currentDuration = 0;
+        }
+
+        public static unsafe Color Color
+        {
+            get => CurrentCommandBuffer->PendingStyle.color;
+            set => CurrentCommandBuffer->StyleColor(value);
+        }
+        
+        public static unsafe bool Forward
+        {
+            get => CurrentCommandBuffer->PendingStyle.forward;
+            set => CurrentCommandBuffer->StyleForward(value);
+        }
+        
+        public static unsafe DrawMode DrawMode
+        {
+            get => CurrentCommandBuffer->CurrentDrawMode;
+            set => CurrentCommandBuffer->DrawMode(value);
+        }
+        
+        public static unsafe float Duration
         {
             get
             {
                 DrawbugManager.Initialize();
-                return _instance._commandBuffer.PendingStyle.color;
+                return _instance._currentDuration;
             }
             set
             {
                 DrawbugManager.Initialize();
-                _instance._commandBuffer.StyleColor(value);
+                _instance._currentDuration = value;
             }
         }
         
-        public static bool Forward
+        public static unsafe float4x4 Matrix
         {
-            get
-            {
-                DrawbugManager.Initialize();
-                return _instance._commandBuffer.PendingStyle.forward;
-            }
-            set
-            {
-                DrawbugManager.Initialize();
-                _instance._commandBuffer.StyleForward(value);
-            }
-        }
-        
-        public static DrawMode DrawMode
-        {
-            get
-            {
-                DrawbugManager.Initialize();
-                return _instance._commandBuffer.CurrentDrawMode;
-            }
-            set
-            {
-                DrawbugManager.Initialize();
-                _instance._commandBuffer.DrawMode(value);
-            }
-        }
-        
-        public static float4x4 Matrix
-        {
-            get
-            {
-                DrawbugManager.Initialize();
-                return _instance._commandBuffer.CurrentMatrix;
-            }
-            set
-            {
-                DrawbugManager.Initialize();
-                _instance._commandBuffer.Matrix(value);
-            }
+            get => CurrentCommandBuffer->CurrentMatrix;
+            set => CurrentCommandBuffer->Matrix(value);
         }
         
         public readonly struct DrawScope<T> : IDisposable
@@ -168,142 +221,123 @@ namespace Drawbug
             }
         }
         
-        public static DrawScope<Color> WithColor(Color newValue)
+        public static unsafe DrawScope<Color> WithColor(Color newValue)
         {
             return new DrawScope<Color>(Color, newValue, previousValue => Color = previousValue);
         }
         
-        public static DrawScope<bool> WithForward(bool newValue = true)
+        public static unsafe DrawScope<bool> WithForward(bool newValue = true)
         {
             return new DrawScope<bool>(Forward, newValue, previousValue => Forward = previousValue);
         }
         
-        public static DrawScope<DrawMode> WithDrawMode(DrawMode newValue)
+        public static unsafe DrawScope<DrawMode> WithDrawMode(DrawMode newValue)
         {
             return new DrawScope<DrawMode>(DrawMode, newValue, previousValue => DrawMode = previousValue);
         }
         
-        public static DrawScope<float4x4> WithMatrix(float4x4 newValue)
+        public static unsafe DrawScope<float> WithDuration(float newValue)
+        {
+            return new DrawScope<float>(Duration, newValue, previousValue => Duration = previousValue);
+        }
+        
+        public static unsafe DrawScope<float4x4> WithMatrix(float4x4 newValue)
         {
             return new DrawScope<float4x4>(Matrix, newValue, previousValue => Matrix = previousValue);
         }
         
-        public static DrawScope<float4x4> InLocalSpace(Transform transform)
+        public static unsafe DrawScope<float4x4> InLocalSpace(Transform transform)
         {
             return new DrawScope<float4x4>(Matrix, transform.localToWorldMatrix, previousValue => Matrix = previousValue);
         }
         
-        public static DrawScope<float4x4> InPosition(float3 position)
+        public static unsafe DrawScope<float4x4> InPosition(float3 position)
         {
             return new DrawScope<float4x4>(Matrix, float4x4.TRS(position, quaternion.identity, new float3(1)), previousValue => Matrix = previousValue);
         }
 
-        public static void Line(float3 point1, float3 point2)
+        public static unsafe void Line(float3 point1, float3 point2)
         {
-            DrawbugManager.Initialize();
-            
-            _instance._commandBuffer.Line(point1, point2);
+            CurrentCommandBuffer->Line(point1, point2);
         }
         
-        public static void Line(Vector3 point1, Vector3 point2)
+        public static unsafe void Line(Vector3 point1, Vector3 point2)
         {
-            Profiler.BeginSample("Line");
-            DrawbugManager.Initialize();
-            
-            _instance._commandBuffer.Line(point1, point2);
-            Profiler.EndSample();
+            CurrentCommandBuffer->Line(point1, point2);
         }
 
-        public static void Lines(float3[] lines)
+        public static unsafe void Lines(float3[] lines)
         {
-            Profiler.BeginSample("Lines");
-            DrawbugManager.Initialize();
-            
-            _instance._commandBuffer.Lines(lines);
-            Profiler.EndSample();
+            CurrentCommandBuffer->Lines(lines);
         }
         
-        public static void Lines(NativeArray<float3> lines)
+        public static unsafe void Lines(NativeArray<float3> lines)
         {
-            Profiler.BeginSample("Lines");
-            DrawbugManager.Initialize();
-            
-            _instance._commandBuffer.Lines(lines);
-            Profiler.EndSample();
+            CurrentCommandBuffer->Lines(lines);
         }
         
-        public static void Rectangle(float3 position, float3 scale, quaternion rotation)
+        public static unsafe void Rectangle(float3 position, float3 scale, quaternion rotation)
         {
-            DrawbugManager.Initialize();
-            
-            _instance._commandBuffer.Rectangle(position, scale, rotation);
+            CurrentCommandBuffer->Rectangle(position, scale, rotation);
         }
         
-        public static void Circle(float3 position, float radius, quaternion rotation)
+        public static unsafe void Circle(float3 position, float radius, quaternion rotation)
         {
-            DrawbugManager.Initialize();
-            
-            _instance._commandBuffer.Circle(position, radius, rotation);
+            CurrentCommandBuffer->Circle(position, radius, rotation);
         }
         
-        public static void HollowCircle(float3 position, float innerRadius, float outerRadius, quaternion rotation)
+        public static unsafe void HollowCircle(float3 position, float innerRadius, float outerRadius, quaternion rotation)
         {
-            DrawbugManager.Initialize();
-            
-            _instance._commandBuffer.HollowCircle(position, innerRadius, outerRadius, rotation);
+            CurrentCommandBuffer->HollowCircle(position, innerRadius, outerRadius, rotation);
         }
         
-        public static void Capsule(float3 position, float2 size, quaternion rotation, bool isVertical)
+        public static unsafe void Capsule(float3 position, float2 size, quaternion rotation, bool isVertical)
         {
-            DrawbugManager.Initialize();
-            
-            _instance._commandBuffer.Capsule(position, size, rotation, isVertical);
+            CurrentCommandBuffer->Capsule(position, size, rotation, isVertical);
         }
         
-        public static void Box(float3 position, float scale)
+        public static unsafe void Box(float3 position, float scale)
         {
-            if (Time.inFixedTimeStep)
-            {
-                
-            }
-            DrawbugManager.Initialize();
+            CurrentCommandBuffer->Box(position, scale, quaternion.identity);
+            // DrawbugManager.Initialize();
+            // if (_hasDuration)
+            // {
+            //     _instance._durationBuffers[_currentDurationBuffer];
+            // }
+            // else if (Time.inFixedTimeStep)
+            // {
+            // _instance._fixedCommandBuffer.Box(position, scale, quaternion.identity);
+            // }
+            // else
+            // {
+            // _instance._commandBuffer.Box(position, scale, quaternion.identity);
+            // }
             
-            _instance._commandBuffer.Box(position, scale, quaternion.identity);
         }
         
-        public static void Box(float3 position, float3 scale)
+        public static unsafe void Box(float3 position, float3 scale)
         {
-            DrawbugManager.Initialize();
-            
-            _instance._commandBuffer.Box(position, scale, quaternion.identity);
+            CurrentCommandBuffer->Box(position, scale, quaternion.identity);
         }
 
-        public static void Box(float3 position, float3 scale, quaternion rotation)
+        public static unsafe void Box(float3 position, float3 scale, quaternion rotation)
         {
-            DrawbugManager.Initialize();
-            
-            _instance._commandBuffer.Box(position, scale, rotation);
+            CurrentCommandBuffer->Box(position, scale, rotation);
         }
 
-        public static void Sphere(float3 position, float radius)
+        public static unsafe void Sphere(float3 position, float radius)
         {
-            DrawbugManager.Initialize();
-            
-            _instance._commandBuffer.Sphere(position, radius);
+            CurrentCommandBuffer->Sphere(position, radius);
         }
         
-        public static void Cylinder(float3 position, float radius, float height, quaternion rotation)
+        public static unsafe void Cylinder(float3 position, float radius, float height, quaternion rotation)
         {
-            DrawbugManager.Initialize();
-            
-            _instance._commandBuffer.Cylinder(position, radius, height, rotation);
+            CurrentCommandBuffer->Cylinder(position, radius, height, rotation);
         }
         
-        public static void Capsule3D(float3 position, float radius, float height, quaternion rotation)
+        public static unsafe void Capsule3D(float3 position, float radius, float height, quaternion rotation)
         {
-            DrawbugManager.Initialize();
-            
-            _instance._commandBuffer.Capsule3D(position, radius, height, rotation);
+            CurrentCommandBuffer->Capsule3D(position, radius, height, rotation);
         }
     }
 }

@@ -1,11 +1,11 @@
-﻿using System;
+﻿// ReSharper disable InconsistentNaming
+using System;
 using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
-// ReSharper disable InconsistentNaming
 
 namespace Drawbug
 {
@@ -405,6 +405,29 @@ namespace Drawbug
                 height = height,
                 rotation = rotation
             });
+        }
+
+        internal void AnotherBuffer(DrawCommandBuffer commandBuffer)
+        {
+            var bufferLength = commandBuffer._buffer.Length;
+            Reserve(bufferLength);
+            unsafe
+            {
+                void* destinationPtr = _buffer.Ptr + _buffer.Length;
+                void* sourcePtr = commandBuffer._buffer.Ptr;
+                UnsafeUtility.MemCpy(destinationPtr, sourcePtr, bufferLength);
+                _buffer.Length += bufferLength;
+            }
+        }
+        
+        internal unsafe void AnotherBuffer(DrawCommandBuffer* commandBuffer)
+        {
+            var bufferLength = commandBuffer->_buffer.Length;
+            Reserve(bufferLength);
+            void* destinationPtr = _buffer.Ptr + _buffer.Length;
+            void* sourcePtr = commandBuffer->_buffer.Ptr;
+            UnsafeUtility.MemCpy(destinationPtr, sourcePtr, bufferLength);
+            _buffer.Length += bufferLength;
         }
     }
 }

@@ -185,30 +185,32 @@ namespace Drawbug
             Graphics.ExecuteCommandBuffer(_cmd);
         }
         
-        private struct BuildDrawbugCommands
-        {
-            
-        }
-        private struct ClearDrawbug
-        {
-            
-        }
+        private struct BeginFixedUpdate { }
+        private struct ClearDrawbug { }
+        private struct BuildDrawbugCommands { }
 
         private void InsertToPlayerLoop()
         {
-            PlayerLoopInserter.InsertSystem(typeof(BuildDrawbugCommands), typeof(UnityEngine.PlayerLoop.PostLateUpdate), InsertType.Before, BuildCommandsUpdate);
+            PlayerLoopInserter.InsertSystem(typeof(BeginFixedUpdate), typeof(UnityEngine.PlayerLoop.FixedUpdate), InsertType.First, ClearFixedCommands);
             PlayerLoopInserter.InsertSystem(typeof(ClearDrawbug), typeof(UnityEngine.PlayerLoop.EarlyUpdate), InsertType.Before, ClearFrameData);
+            PlayerLoopInserter.InsertSystem(typeof(BuildDrawbugCommands), typeof(UnityEngine.PlayerLoop.PostLateUpdate), InsertType.Before, BuildCommandsUpdate);
+        }
+
+        private void ClearFixedCommands()
+        {
+            _draw.ClearFixed();
         }
 
         private void ClearFrameData()
         {
             _draw.Clear();
+            _draw.UpdateTimedBuffers(Time.deltaTime);
         }
 
         private void RemoveFromPlayerLoop()
         {
-            PlayerLoopInserter.RemoveRunner(typeof(BuildDrawbugCommands));
             PlayerLoopInserter.RemoveRunner(typeof(ClearDrawbug));
+            PlayerLoopInserter.RemoveRunner(typeof(BuildDrawbugCommands));
         }
 
         private bool _hasPendingData;
