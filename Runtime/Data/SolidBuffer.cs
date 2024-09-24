@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace Drawbug
 {
     [StructLayout(LayoutKind.Sequential)]
     [BurstCompile]
-    public unsafe struct SolidBuffer : IDisposable
+    internal unsafe struct SolidBuffer : IDisposable
     {
         [NativeDisableUnsafePtrRestriction]
         private UnsafeSolidBuffer* _bufferData;
@@ -24,7 +22,7 @@ namespace Drawbug
 
         private Allocator _allocatorLabel;
 
-        public SolidBuffer(int initialVerticesCapacity, int initialTrianglesCapacity, Allocator allocator = Allocator.Persistent)
+        internal SolidBuffer(int initialVerticesCapacity, int initialTrianglesCapacity, Allocator allocator = Allocator.Persistent)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             // Native allocation is only valid for Temp, Job and Persistent
@@ -141,7 +139,7 @@ namespace Drawbug
             _bufferData->FillTrianglesBuffer(buffer);
         }
 
-        public bool IsCreated => _bufferData != null && _bufferData->IsCreated;
+        internal bool IsCreated => _bufferData != null && _bufferData->IsCreated;
 
         public void Dispose()
         {
@@ -173,7 +171,7 @@ namespace Drawbug
         internal bool UseMatrix;
         internal float4x4 Matrix;
 
-        public UnsafeSolidBuffer(int initialVerticesCapacity, int initialTrianglesCapacity, ref Allocator allocator)
+        internal UnsafeSolidBuffer(int initialVerticesCapacity, int initialTrianglesCapacity, ref Allocator allocator)
         {
             _allocatorLabel = allocator;
 
@@ -190,7 +188,7 @@ namespace Drawbug
             Matrix = float4x4.identity;
         }
 
-        public void Clear()
+        internal void Clear()
         {
             _verticesBuffer->Clear();
             _trianglesBuffer->Clear();
@@ -199,7 +197,7 @@ namespace Drawbug
             Matrix = float4x4.identity;
         }
 
-        public void Submit(float3 point, uint dataIndex)
+        internal void Submit(float3 point, uint dataIndex)
         {
             _verticesBuffer->Submit(new PositionData
             {
@@ -208,11 +206,12 @@ namespace Drawbug
             });
         }
 
-        public void Submit(NativeArray<float3> points, int length, uint dataIndex)
+        internal void Submit(NativeArray<float3> points, int length, uint dataIndex)
         {
+            _verticesBuffer->EnsureCapacity(length);
             for (var i = 0; i < length; i++)
             {
-                _verticesBuffer->Submit(new PositionData
+                _verticesBuffer->SubmitWithoutCheckCapacity(new PositionData
                 {
                     Position = UseMatrix ? math.mul(Matrix, new float4(points[i], 1)).xyz : points[i], 
                     DataIndex = dataIndex
@@ -220,11 +219,12 @@ namespace Drawbug
             }
         }
         
-        public void Submit(float3* points, int length, uint dataIndex)
+        internal void Submit(float3* points, int length, uint dataIndex)
         {
+            _verticesBuffer->EnsureCapacity(length);
             for (var i = 0; i < length; i++)
             {
-                _verticesBuffer->Submit(new PositionData
+                _verticesBuffer->SubmitWithoutCheckCapacity(new PositionData
                 {
                     Position = UseMatrix ? math.mul(Matrix, new float4(points[i], 1)).xyz : points[i],
                     DataIndex = dataIndex
@@ -232,32 +232,32 @@ namespace Drawbug
             }
         }
 
-        public void Submit(int triangle)
+        internal void Submit(int triangle)
         {
             _trianglesBuffer->Submit(triangle);
         }
 
-        public void Submit(NativeArray<int> triangles, int length)
+        internal void Submit(NativeArray<int> triangles, int length)
         {
             _trianglesBuffer->Submit(triangles, length);
         }
         
-        public void Submit(int* triangles, int length)
+        internal void Submit(int* triangles, int length)
         {
             _trianglesBuffer->Submit(triangles, length);
         }
 
-        public void FillVerticesBuffer(GraphicsBuffer buffer)
+        internal void FillVerticesBuffer(GraphicsBuffer buffer)
         {            
             _verticesBuffer->FillBuffer(buffer);
         }
 
-        public void FillTrianglesBuffer(GraphicsBuffer buffer)
+        internal void FillTrianglesBuffer(GraphicsBuffer buffer)
         {
             _trianglesBuffer->FillBuffer(buffer);
         }
 
-        public bool IsCreated => _verticesBuffer != null && _trianglesBuffer != null;
+        internal bool IsCreated => _verticesBuffer != null && _trianglesBuffer != null;
 
         public void Dispose()
         {
@@ -284,7 +284,7 @@ namespace Drawbug
         private int _capacity;
         private Allocator _allocatorLabel;
 
-        public UnsafeBuffer(int initialCapacity, ref Allocator allocator)
+        internal UnsafeBuffer(int initialCapacity, ref Allocator allocator)
         {
             _data = (T*)UnsafeUtility.Malloc(sizeof(T) * initialCapacity, UnsafeUtility.AlignOf<T>(), allocator);
             _currentLength = 0;
@@ -292,36 +292,39 @@ namespace Drawbug
             _allocatorLabel = allocator;
         }
 
-        public int Length => _currentLength;
-        public int Capacity => _capacity;
+        internal int Length => _currentLength;
+        internal int Capacity => _capacity;
 
-        public void Clear()
+        internal void Clear()
         {
             _currentLength = 0;
         }
 
-        private void EnsureCapacity(int additionalCapacity)
+        internal void EnsureCapacity(int additionalCapacity)
         {
             if (_currentLength + additionalCapacity > _capacity)
             {
                 var newCapacity = Math.Max(_capacity * 2, _currentLength + additionalCapacity);
-                T* newBufferPtr = (T*)UnsafeUtility.Malloc(newCapacity * sizeof(T), UnsafeUtility.AlignOf<T>(), _allocatorLabel);
+                
+                var newBufferPtr = (T*)UnsafeUtility.Malloc(newCapacity * sizeof(T), UnsafeUtility.AlignOf<T>(), _allocatorLabel);
                 UnsafeUtility.MemCpy(newBufferPtr, _data, _currentLength * sizeof(T));
                 UnsafeUtility.Free(_data, _allocatorLabel);
+                
                 _data = newBufferPtr;
                 _capacity = newCapacity;
             }
         }
+        
 
         [BurstCompile]
-        public void Submit(T value)
+        internal void Submit(T value)
         {
             EnsureCapacity(1);
             _data[_currentLength++] = value;
         }
 
         [BurstCompile]
-        public void Submit(NativeArray<T> values, int length)
+        internal void Submit(NativeArray<T> values, int length)
         {
             EnsureCapacity(length);
             var valuesPtr = (T*)values.GetUnsafeReadOnlyPtr();
@@ -332,7 +335,7 @@ namespace Drawbug
         }
         
         [BurstCompile]
-        public void Submit(T* valuesPtr, int length)
+        internal void Submit(T* valuesPtr, int length)
         {
             EnsureCapacity(length);
             for (var i = 0; i < length; i++)
@@ -341,17 +344,23 @@ namespace Drawbug
             }
         }
 
+        [BurstCompile]
+        internal void SubmitWithoutCheckCapacity(T value)
+        {
+            _data[_currentLength++] = value;
+        }
+        
         [BurstDiscard]
-        public void FillBuffer(GraphicsBuffer buffer)
+        internal void FillBuffer(GraphicsBuffer buffer)
         {
             var data = (T*)buffer.LockBufferForWrite<T>(0, _currentLength).GetUnsafePtr();
             UnsafeUtility.MemCpy(data, _data, _currentLength * sizeof(T));
             buffer.UnlockBufferAfterWrite<T>(_currentLength);
         }
 
-        public bool IsCreated => _data != null;
+        internal bool IsCreated => _data != null;
 
-        public void Dispose()
+        internal void Dispose()
         {
             if (!IsCreated) return;
             UnsafeUtility.Free(_data, _allocatorLabel);
@@ -378,7 +387,7 @@ namespace Drawbug
     //     private Allocator _allocatorLabel;
     //     
     //
-    //     public UnsafeSolidBuffer(int initialVerticesCapacity, int initialTrianglesCapacity, ref Allocator allocator)
+    //     internal UnsafeSolidBuffer(int initialVerticesCapacity, int initialTrianglesCapacity, ref Allocator allocator)
     //     {
     //         _verticesData = (PositionData*)UnsafeUtility.Malloc(sizeof(PositionData) * initialVerticesCapacity, UnsafeUtility.AlignOf<PositionData>(), allocator);
     //         _trianglesData = (int*)UnsafeUtility.Malloc(sizeof(int) * initialTrianglesCapacity, UnsafeUtility.AlignOf<int>(), allocator);
@@ -507,9 +516,9 @@ namespace Drawbug
     //         buffer.UnlockBufferAfterWrite<int>(_currentTrianglesLength);
     //     }
     //
-    //     public bool IsCreated => _verticesData != null && _trianglesData != null;
+    //     internal bool IsCreated => _verticesData != null && _trianglesData != null;
     //
-    //     public void Dispose()
+    //     internal void Dispose()
     //     {
     //         if(!IsCreated)
     //             return;

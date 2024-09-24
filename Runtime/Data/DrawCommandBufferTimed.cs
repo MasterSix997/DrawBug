@@ -40,12 +40,12 @@ namespace Drawbug
 
          internal DrawCommandBuffer* GetBuffer(float duration)
          {
+             // ReSharper disable all CompareOfFloatsByEqualityOperator
              for (int i = 0; i < _capacity; i++)
              {
                  if (_activeBuffersCount == _capacity)
                      break;
                  
-                 // ReSharper disable once CompareOfFloatsByEqualityOperator
                  if (_bufferPool[i].IsActive && _bufferPool[i].RemainingTime == duration)
                  {
                      return _bufferPool[i].Buffer;

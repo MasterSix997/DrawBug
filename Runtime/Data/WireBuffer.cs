@@ -211,16 +211,10 @@ namespace Drawbug
             {
                 var newCapacity = Math.Max(_bufferCapacity * 2, _currentLength + additionalCapacity);
         
-                // Aloca um novo bloco de memória
-                PositionData* newBufferPtr = (PositionData*)UnsafeUtility.Malloc(newCapacity * sizeof(PositionData), UnsafeUtility.AlignOf<PositionData>(), _allocatorLabel);
-        
-                // Copia os dados antigos para o novo bloco de memória
+                var newBufferPtr = (PositionData*)UnsafeUtility.Malloc(newCapacity * sizeof(PositionData), UnsafeUtility.AlignOf<PositionData>(), _allocatorLabel);
                 UnsafeUtility.MemCpy(newBufferPtr, _bufferData, _currentLength * sizeof(PositionData));
-        
-                // Libera o antigo bloco de memória
                 UnsafeUtility.FreeTracked(_bufferData, _allocatorLabel);
 
-                // Atualiza o ponteiro do buffer e seu tamanho
                 _bufferData = newBufferPtr;
                 _bufferCapacity = newCapacity;
             }
@@ -306,7 +300,6 @@ namespace Drawbug
             if(!IsCreated)
                 return;
             
-            Debug.Log("Buffer memory successfully freed.");
             UnsafeUtility.FreeTracked(_bufferData, _allocatorLabel);
             _bufferData = null;
         }

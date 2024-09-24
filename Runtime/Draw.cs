@@ -112,7 +112,6 @@ namespace Drawbug
         public void UpdateTimedBuffers(float deltaTime)
         {
             _timedCommandBuffer.UpdateTimes(deltaTime);
-            Debug.Log(_timedCommandBuffer.ActiveBuffersCount);
         }
 
         private static unsafe DrawCommandBuffer* CurrentCommandBuffer
