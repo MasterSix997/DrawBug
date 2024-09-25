@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Drawbug.Physics;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
@@ -20,12 +21,15 @@ namespace Drawbug
 
         private Draw _draw;
         private CommandBuffer _cmd;
-        
         private bool _isEnabled;
+        private DrawbugSettings _settings;
+        
         private RenderPipelineOption _currentRenderPipeline = RenderPipelineOption.BuiltIn;
 #if PACKAGE_UNIVERSAL_RP
         private DrawbugRenderPassFeature _renderPassFeature;
 #endif
+
+        internal static DrawbugSettings Settings => _instance._settings;
         
         public static void Initialize()
         {
@@ -91,12 +95,13 @@ namespace Drawbug
             }
             
             _isEnabled = true;
+            _settings = DrawbugSettings.GetOrCreateSettings();
+            _cmd = new CommandBuffer { name = "Drawbug" };
             _draw = new Draw();
+
+            DrawPhysics2D.Style = _settings;
+            
             InsertToPlayerLoop();
-            _cmd = new CommandBuffer()
-            {
-                name = "Drawbug"
-            };
             
             // Configura callback para renderização com pipeline padrão
             Camera.onPostRender += PostRender;
@@ -120,6 +125,7 @@ namespace Drawbug
             RemoveFromPlayerLoop();
             _draw.Dispose();
             _cmd.Dispose();
+            _settings = null;
             
             Camera.onPostRender -= PostRender;
 #if UNITY_2023_3_OR_NEWER

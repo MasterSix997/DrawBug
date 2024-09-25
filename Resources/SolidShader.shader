@@ -1,5 +1,9 @@
 ﻿Shader "Unlit/SolidShader"
 {
+    Properties
+    {
+        _OccludedOpacity("Ocludded Opacity", Float) = 0
+    }
     CGINCLUDE
     #pragma vertex vert
     #pragma fragment frag
@@ -47,6 +51,8 @@
             CGPROGRAM
             #include "drawbug_common.cginc"
 
+            float _OccludedOpacity;
+
             interpolator vert (const uint vertex_id: SV_VertexID)
             {
                 interpolator o;
@@ -59,7 +65,7 @@
                 if (style.forward)
                     o.color = style.color;
                 else
-                    o.color = float4(0, 0, 0, 0);
+                    o.color = float4(style.color.rgb, style.color.a * _OccludedOpacity);
                 
                 return o;
             }

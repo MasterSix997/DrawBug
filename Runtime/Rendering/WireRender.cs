@@ -18,6 +18,11 @@ namespace Drawbug
         private GraphicsBuffer _styleData;
         
         internal bool CanRender { get; private set; }
+        
+        internal WireRender()
+        {
+            _material.SetFloat("_OccludedOpacity", DrawbugManager.Settings.occludedWireOpacity);
+        }
 
         internal unsafe void UpdateBuffer(WireBuffer positions, NativeArray<DrawCommandBuffer.StyleData> styleData, int count)
         {

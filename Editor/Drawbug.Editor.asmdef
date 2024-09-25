@@ -1,0 +1,18 @@
+{
+    "name": "Drawbug.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:783f5f2d544247e09c006c437605815f"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

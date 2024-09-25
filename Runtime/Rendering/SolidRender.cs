@@ -20,6 +20,11 @@ namespace Drawbug
         
         internal bool CanRender { get; private set; }
 
+        internal SolidRender()
+        {
+            _material.SetFloat("_OccludedOpacity", DrawbugManager.Settings.occludedSolidOpacity);
+        }
+
         internal unsafe void UpdateBuffer(SolidBuffer dataBuffer, NativeArray<DrawCommandBuffer.StyleData> styleData, int trianglesCount)
         {
             if (trianglesCount < 3)
