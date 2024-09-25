@@ -6,7 +6,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 #endif
 using UnityEngine.Rendering.Universal;
 
-namespace Drawbug {
+namespace Drawbug.PhysicsExtension {
 	public class DrawbugRenderPassFeature : ScriptableRendererFeature {
 		public class DrawbugURPRenderPass : ScriptableRenderPass {
 #if PACKAGE_UNIVERSAL_RP_17_0_0_OR_NEWER

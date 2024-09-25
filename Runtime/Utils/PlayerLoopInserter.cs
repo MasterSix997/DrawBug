@@ -5,18 +5,17 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.LowLevel;
 
-namespace Drawbug {
-    
-
-    public enum InsertType {
+namespace Drawbug.PhysicsExtension 
+{
+    internal enum InsertType {
         Before,
         After,
         First,
         Last,
     }
-    public static class PlayerLoopInserter {
+    internal static class PlayerLoopInserter {
 
-        public static void InsertSystem(Type thisLoop,Type parentLoopType,InsertType insertType,PlayerLoopSystem.UpdateFunction function) {
+        internal static void InsertSystem(Type thisLoop,Type parentLoopType,InsertType insertType,PlayerLoopSystem.UpdateFunction function) {
             var mySystem = new PlayerLoopSystem
             {
                 type = thisLoop,
@@ -69,33 +68,36 @@ namespace Drawbug {
             
             PlayerLoop.SetPlayerLoop(playerLoop);
         }
-        static PlayerLoopSystem[] RemoveRunner(PlayerLoopSystem loopSystem,  Type loopRunnerType)
+
+        private static PlayerLoopSystem[] RemoveRunner(PlayerLoopSystem loopSystem,  Type loopRunnerType)
         {
             
             return loopSystem.subSystemList
                 .Where(ls =>   ls.type != loopRunnerType)
                 .ToArray();
-        }static PlayerLoopSystem[] RemoveRunner(PlayerLoopSystem loopSystem,  Type loopRunnerType1,Type loopRunnerType2)
+        }
+
+        private static PlayerLoopSystem[] RemoveRunner(PlayerLoopSystem loopSystem,  Type loopRunnerType1,Type loopRunnerType2)
         {
             
             return loopSystem.subSystemList
                 .Where(ls =>   ls.type != loopRunnerType1&&ls.type!=loopRunnerType2)
                 .ToArray();
         }
-        public static void RemoveRunner( Type loopRunnerType)
+        internal static void RemoveRunner( Type loopRunnerType)
         {
             var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
             playerLoop.subSystemList = RemoveRunner(playerLoop, loopRunnerType);
             PlayerLoop.SetPlayerLoop(playerLoop);
         }
-        public static void RemoveRunner(  Type loopRunnerType1,Type loopRunnerType2)
+        internal static void RemoveRunner(  Type loopRunnerType1,Type loopRunnerType2)
         {
             var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
             playerLoop.subSystemList = RemoveRunner(playerLoop, loopRunnerType1,loopRunnerType2);
             PlayerLoop.SetPlayerLoop(playerLoop);
         }
 
-        public static IEnumerable<T> Insert<T>(this IEnumerable<T> enumerable,int index,T element) {
+        internal static IEnumerable<T> Insert<T>(this IEnumerable<T> enumerable,int index,T element) {
             var current = 0;
             foreach (var e in enumerable) {
                 if (current++ == index) {

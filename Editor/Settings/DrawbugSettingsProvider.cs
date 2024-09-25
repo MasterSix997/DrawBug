@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
-namespace Drawbug.Editor
+namespace Drawbug.PhysicsExtension.Editor
 {
     public class DrawbugSettingsProvider : SettingsProvider
     {

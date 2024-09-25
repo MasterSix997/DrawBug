@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85f8f3b502434069a1586c1076b8e32a, type: 3}
   m_Name: DrawbugSettings
   m_EditorClassIdentifier: 
-  occludedWireOpacity: 0.2
-  occludedSolidOpacity: 0.1
+  occludedWireOpacity: 0.05
+  occludedSolidOpacity: 0
   drawPhysicsEnabled: 1
   hitColor: {r: 0, g: 1, b: 0, a: 1}
   noHitColor: {r: 1, g: 0, b: 0, a: 1}

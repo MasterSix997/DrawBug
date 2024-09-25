@@ -1,7 +1,7 @@
 ﻿using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Drawbug
+namespace Drawbug.PhysicsExtension
 {
     internal unsafe partial struct ProcessCommandsJob
     {
@@ -16,7 +16,7 @@ namespace Drawbug
         }
         
         // 2D Shapes
-        private void AddRectangle(DrawCommandBuffer.BoxData boxData)
+        private void AddRectangle(DrawCommandBuffer.RectangleData boxData)
         {
             var position = boxData.position;
             var rotation = boxData.rotation;

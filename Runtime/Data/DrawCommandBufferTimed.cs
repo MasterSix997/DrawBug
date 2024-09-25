@@ -4,7 +4,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace Drawbug
+namespace Drawbug.PhysicsExtension
 {
     [StructLayout(LayoutKind.Sequential)]
      internal unsafe struct DrawCommandBufferInfo

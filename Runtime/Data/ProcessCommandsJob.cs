@@ -6,7 +6,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Drawbug
+namespace Drawbug.PhysicsExtension
 {
     [BurstCompile]
     internal unsafe partial struct ProcessCommandsJob : IJob
@@ -67,7 +67,7 @@ namespace Drawbug
                     reader.Offset += sizeOfArray;
                     break;
                 case DrawCommandBuffer.Command.Rectangle:
-                    var rectData = reader.ReadNext<DrawCommandBuffer.BoxData>();
+                    var rectData = reader.ReadNext<DrawCommandBuffer.RectangleData>();
                     if (_currentDrawMode is DrawMode.Wire or DrawMode.Both)
                         AddRectangle(rectData);
                     if (_currentDrawMode is DrawMode.Solid or DrawMode.Both)

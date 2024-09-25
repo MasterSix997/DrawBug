@@ -6,7 +6,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Drawbug
+namespace Drawbug.PhysicsExtension
 {
     [StructLayout(LayoutKind.Sequential)]
     [BurstCompile]

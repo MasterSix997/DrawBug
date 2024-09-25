@@ -2,7 +2,7 @@
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.Rendering;
 
-namespace Drawbug {
+namespace Drawbug.PhysicsExtension {
 	class DrawbugHDRPCustomPass : CustomPass 
 	{
 		protected override void Setup (ScriptableRenderContext renderContext, CommandBuffer cmd) { }

@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace Drawbug
+namespace Drawbug.PhysicsExtension
 {
     public class DrawbugSettings : ScriptableObject
     {

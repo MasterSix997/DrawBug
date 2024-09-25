@@ -3,7 +3,7 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Profiling;
 
-namespace Drawbug
+namespace Drawbug.PhysicsExtension
 {
     internal class WireRender : IDisposable
     {

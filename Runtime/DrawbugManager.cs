@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
-using Drawbug.Physics;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.Rendering.Universal;
 
-namespace Drawbug
+namespace Drawbug.PhysicsExtension
 {
     internal class DrawbugManager : MonoBehaviour
     {
@@ -99,6 +98,7 @@ namespace Drawbug
             _cmd = new CommandBuffer { name = "Drawbug" };
             _draw = new Draw();
 
+            DrawPhysics.Style = _settings;
             DrawPhysics2D.Style = _settings;
             
             InsertToPlayerLoop();

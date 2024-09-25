@@ -7,7 +7,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Drawbug
+namespace Drawbug.PhysicsExtension
 {
     public enum DrawMode
     {
@@ -31,7 +31,7 @@ namespace Drawbug
             _hasPendingStyle = default;
             PendingStyle = default;
 
-            CurrentDrawMode = Drawbug.DrawMode.Wire;
+            CurrentDrawMode = PhysicsExtension.DrawMode.Wire;
             CurrentMatrix = float4x4.identity;
             
             ResetStyle();
@@ -52,7 +52,7 @@ namespace Drawbug
         {
             _buffer.Reset();
             
-            CurrentDrawMode = Drawbug.DrawMode.Wire;
+            CurrentDrawMode = PhysicsExtension.DrawMode.Wire;
             
             ResetStyle();
         }
@@ -110,6 +110,13 @@ namespace Drawbug
         {
             public float3 position;
             public float3 size;
+            public quaternion rotation;
+        }
+        
+        internal struct RectangleData
+        {
+            public float3 position;
+            public float2 size;
             public quaternion rotation;
         }
         
@@ -307,14 +314,43 @@ namespace Drawbug
                 _buffer.Length += sizeOfArray;
             }
         }
-        
-        internal void Rectangle(float3 position, float3 size, quaternion rotation)
+
+        internal void Point(float3 position, float size)
         {
-            Reserve<BoxData>();
+            Line(position + new float3(-size, 0, 0), position + new float3(size, 0, 0));
+            Line(position + new float3(0, -size, 0), position + new float3(0, size, 0));
+            Line(position + new float3(0, 0, -size), position + new float3(0, 0, size));
+        }
+        
+        internal void Point(float2 position, float size)
+        {
+            var position3 = new float3(position.x, position.y, 0);
+            Line(position3 + new float3(-size, 0, 0), position3 + new float3(size, 0, 0));
+            Line(position3 + new float3(0, -size, 0), position3 + new float3(0, size, 0));
+        }
+        
+        internal void Rectangle(float3 position, float2 size, quaternion rotation)
+        {
+            Reserve<RectangleData>();
             Add(Command.Rectangle);
-            Add(new BoxData
+            Add(new RectangleData
             {
                 position = position,
+                size = size,
+                rotation = rotation
+            });
+        }
+        
+        internal void Rectangle(float3 point1, float3 point2, quaternion rotation)
+        {
+            var center = new float3((point1 + point2) / 2);
+            var size = math.abs(point2 - point1).xy;
+
+            Reserve<RectangleData>();
+            Add(Command.Rectangle);
+            Add(new RectangleData
+            {
+                position = center,
                 size = size,
                 rotation = rotation
             });

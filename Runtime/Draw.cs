@@ -3,7 +3,7 @@ using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Drawbug
+namespace Drawbug.PhysicsExtension
 {
     public class Draw : IDisposable
     {
@@ -275,14 +275,34 @@ namespace Drawbug
             CurrentCommandBuffer->Lines(lines);
         }
         
-        public static unsafe void Rectangle(float3 position, float3 scale, quaternion rotation)
+        public static unsafe void Rectangle(float3 position, float2 scale, quaternion rotation)
         {
             CurrentCommandBuffer->Rectangle(position, scale, rotation);
+        }
+        
+        public static unsafe void Rectangle(float3 point1, float3 point2, quaternion rotation)
+        {
+            CurrentCommandBuffer->Rectangle(point1, point2, rotation);
+        }
+        
+        public static unsafe void Rectangle(float2 point1, float2 point2, quaternion rotation)
+        {
+            CurrentCommandBuffer->Rectangle(new float3(point1, 0), new float3(point2, 0), rotation);
+        }
+        
+        public static unsafe void Rectangle(float2 point1, float2 point2)
+        {
+            CurrentCommandBuffer->Rectangle(new float3(point1, 0), new float3(point2, 0), quaternion.identity);
         }
         
         public static unsafe void Circle(float3 position, float radius, quaternion rotation)
         {
             CurrentCommandBuffer->Circle(position, radius, rotation);
+        }
+        
+        public static unsafe void Circle(float3 position, float radius)
+        {
+            CurrentCommandBuffer->Circle(position, radius, quaternion.identity);
         }
         
         public static unsafe void HollowCircle(float3 position, float innerRadius, float outerRadius, quaternion rotation)
@@ -337,6 +357,16 @@ namespace Drawbug
         public static unsafe void Capsule3D(float3 position, float radius, float height, quaternion rotation)
         {
             CurrentCommandBuffer->Capsule3D(position, radius, height, rotation);
+        }
+        
+        public static unsafe void Point(float3 position, float size = 0.4f)
+        {
+            CurrentCommandBuffer->Point(position, size);
+        }
+        
+        public static unsafe void Point(float2 position, float size = 0.4f)
+        {
+            CurrentCommandBuffer->Point(position, size);
         }
     }
 }

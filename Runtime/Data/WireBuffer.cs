@@ -8,7 +8,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace Drawbug
+namespace Drawbug.PhysicsExtension
 {
     // [NativeContainer]
     // [DebuggerDisplay("Length = {_bufferData == null ? default : Length}, Capacity = {_bufferData == null ? default : Capacity}")]
@@ -16,7 +16,7 @@ namespace Drawbug
     // [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
     [StructLayout(LayoutKind.Sequential)]
     [BurstCompile]
-    public unsafe struct WireBuffer : IDisposable
+    internal unsafe struct WireBuffer : IDisposable
     {
         [NativeDisableUnsafePtrRestriction]
         private UnsafeWireBuffer* _bufferData;
