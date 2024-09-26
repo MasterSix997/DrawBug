@@ -2,7 +2,7 @@
   "name": "com.mastersix.drawbug",
   "displayName": "Drawbug",
   "version": "0.0.1",
-  "unity": "2021",
+  "unity": "2021.3",
   "description": "Drawbug is a visual debugging package that allows you to draw multiple lines, primitive shapes and casts in real time.",
   "documentationUrl": "https://mastersix997.github.io/DrawBug-Doc/",
   "dependencies": {
