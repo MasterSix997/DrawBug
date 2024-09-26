@@ -1,16 +1,22 @@
 ﻿{
   "name": "com.mastersix.drawbug",
-  "displayName": "DrawBug",
+  "displayName": "Drawbug",
   "version": "0.0.1",
-  "unity": "2019.4",
-  "description": "DrawBug is an plug and play API that allows drawing various primitive shapes, custom meshes, and texts in real-time. Highly customizable for configuring existing shapes or adding your own designs.",
+  "unity": "2021",
+  "description": "Drawbug is a visual debugging package that allows you to draw multiple lines, primitive shapes and casts in real time.",
   "documentationUrl": "https://mastersix997.github.io/DrawBug-Doc/",
   "dependencies": {
-    "com.unity.textmeshpro": "3.0.6"
+    "com.unity.burst": "1.7.2",
+    "com.unity.collections": "1.4.0",
+    "com.unity.mathematics": "1.2.1"
   },
   "keywords": [
-    "Drawbug",
-    "DrawBug"
+    "drawbug",
+    "drawing",
+    "debug",
+    "visual",
+    "cast",
+    "shape"
   ],
   "author": {
     "name": "MasterSix",
