@@ -5,6 +5,9 @@
   "unity": "2019.4",
   "description": "DrawBug is an plug and play API that allows drawing various primitive shapes, custom meshes, and texts in real-time. Highly customizable for configuring existing shapes or adding your own designs.",
   "documentationUrl": "https://mastersix997.github.io/DrawBug-Doc/",
+  "dependencies": {
+    "com.unity.textmeshpro": "3.0.6"
+  },
   "keywords": [
     "Drawbug",
     "DrawBug"
