@@ -1,10 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Drawbug.PhysicsExtension;
+#if PACKAGE_HIGH_DEFINITION_RP
 using UnityEngine.Rendering.HighDefinition;
+#endif
+#if PACKAGE_UNIVERSAL_RP
 using UnityEngine.Rendering.Universal;
+#endif
 
-namespace Drawbug.PhysicsExtension
+namespace Drawbug
 {
     internal class DrawbugManager : MonoBehaviour
     {
@@ -34,18 +40,18 @@ namespace Drawbug.PhysicsExtension
         {
             if(_instance)
                 return;
+            
+            if(!Application.isPlaying)
+                throw new InvalidOperationException("DrawbugManager can only be initialized in play mode.");
 
-            var gameObj = new GameObject(string.Concat("DrawbugManager (", Random.Range(0, 10000).ToString("0000"), ")"))
+            var gameObj = new GameObject(string.Concat("DrawbugManager (", UnityEngine.Random.Range(0, 10000).ToString("0000"), ")"))
             {
-                //hideFlags = HideFlags.DontSave | HideFlags.NotEditable | HideFlags.HideInHierarchy | HideFlags.HideInInspector
+                hideFlags = HideFlags.NotEditable | HideFlags.HideInHierarchy | HideFlags.HideInInspector
             };
-            Debug.Log(gameObj.name + " Initilized");
+            //Debug.Log(gameObj.name + " Initilized");
             _instance = gameObj.AddComponent<DrawbugManager>();
-            // if (Application.isPlaying)
-            // {
-            //     print("Dont Destroy");
-            //     DontDestroyOnLoad(gameObj);
-            // }
+            
+            DontDestroyOnLoad(gameObj);
         }
 
         private void UpdateCurrentRenderPipeline()
@@ -66,7 +72,7 @@ namespace Drawbug.PhysicsExtension
                     var asset = GraphicsSettings.defaultRenderPipeline as HDRenderPipelineAsset;
                     if (asset != null) {
                         if (!asset.currentPlatformRenderPipelineSettings.supportCustomPass) {
-                            Debug.LogWarning("DebugTool: Custom pass support is disabled in the current render pipeline. Please enable it in the HDRenderPipelineAsset.", asset);
+                            Debug.LogWarning("Drawbug: Custom pass support is disabled in the current render pipeline. Please enable it in the HDRenderPipelineAsset.", asset);
                         }
                     }
                 }
@@ -84,7 +90,7 @@ namespace Drawbug.PhysicsExtension
 
         private void OnEnable()
         {
-            if (_instance == null)
+            if (!_instance)
                 _instance = this;
 
             if (_instance != this)
@@ -103,9 +109,7 @@ namespace Drawbug.PhysicsExtension
             
             InsertToPlayerLoop();
             
-            // Configura callback para renderização com pipeline padrão
             Camera.onPostRender += PostRender;
-            // Configura callback para renderização com pipeline scriptavel
 #if UNITY_2023_3_OR_NEWER
             RenderPipelineManager.beginContextRendering += BeginContextRendering;
 #else
@@ -126,6 +130,7 @@ namespace Drawbug.PhysicsExtension
             _draw.Dispose();
             _cmd.Dispose();
             _settings = null;
+            //Debug.Log(gameObject.name + " Disabled");
             
             Camera.onPostRender -= PostRender;
 #if UNITY_2023_3_OR_NEWER
@@ -143,7 +148,7 @@ namespace Drawbug.PhysicsExtension
 			}
 #endif
         }
-        
+
         void BeginContextRendering (ScriptableRenderContext context, List<Camera> cameras) 
         {
             UpdateCurrentRenderPipeline();

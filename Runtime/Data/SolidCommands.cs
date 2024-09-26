@@ -1,7 +1,6 @@
-using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Drawbug.PhysicsExtension
+namespace Drawbug
 {
     internal unsafe partial struct ProcessCommandsJob
     {

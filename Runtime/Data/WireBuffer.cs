@@ -6,9 +6,8 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
-namespace Drawbug.PhysicsExtension
+namespace Drawbug
 {
     // [NativeContainer]
     // [DebuggerDisplay("Length = {_bufferData == null ? default : Length}, Capacity = {_bufferData == null ? default : Capacity}")]

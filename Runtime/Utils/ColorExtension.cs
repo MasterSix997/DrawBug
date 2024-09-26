@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Drawbug.PhysicsExtension
+namespace Drawbug
 {
     public static class ColorExtension
     {

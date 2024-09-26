@@ -1,5 +1,5 @@
 using System;
-using Drawbug.PhysicsExtension;
+using Drawbug;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Mathematics;

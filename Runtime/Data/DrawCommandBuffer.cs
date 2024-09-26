@@ -7,7 +7,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Drawbug.PhysicsExtension
+namespace Drawbug
 {
     public enum DrawMode
     {
@@ -31,7 +31,7 @@ namespace Drawbug.PhysicsExtension
             _hasPendingStyle = default;
             PendingStyle = default;
 
-            CurrentDrawMode = PhysicsExtension.DrawMode.Wire;
+            CurrentDrawMode = Drawbug.DrawMode.Wire;
             CurrentMatrix = float4x4.identity;
             
             ResetStyle();
@@ -52,7 +52,7 @@ namespace Drawbug.PhysicsExtension
         {
             _buffer.Reset();
             
-            CurrentDrawMode = PhysicsExtension.DrawMode.Wire;
+            CurrentDrawMode = Drawbug.DrawMode.Wire;
             
             ResetStyle();
         }

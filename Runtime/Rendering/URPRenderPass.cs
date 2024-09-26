@@ -6,9 +6,12 @@ using UnityEngine.Rendering.RenderGraphModule;
 #endif
 using UnityEngine.Rendering.Universal;
 
-namespace Drawbug.PhysicsExtension {
-	public class DrawbugRenderPassFeature : ScriptableRendererFeature {
-		public class DrawbugURPRenderPass : ScriptableRenderPass {
+namespace Drawbug 
+{
+	public class DrawbugRenderPassFeature : ScriptableRendererFeature 
+	{
+		public class DrawbugURPRenderPass : ScriptableRenderPass 
+		{
 #if PACKAGE_UNIVERSAL_RP_17_0_0_OR_NEWER
 			[System.Obsolete]
 #endif
@@ -17,16 +20,19 @@ namespace Drawbug.PhysicsExtension {
 #if PACKAGE_UNIVERSAL_RP_17_0_0_OR_NEWER
 			[System.Obsolete]
 #endif
-			public override void Execute (ScriptableRenderContext context, ref RenderingData renderingData) {
+			public override void Execute (ScriptableRenderContext context, ref RenderingData renderingData) 
+			{
 				DrawbugManager.ExecuteCustomRenderPass(context, renderingData.cameraData.camera);
 			}
 			
 #if PACKAGE_UNIVERSAL_RP_17_0_0_OR_NEWER
-			private class PassData {
+			private class PassData 
+			{
 				public Camera camera;
 			}
 
-			public override void RecordRenderGraph (RenderGraph renderGraph, ContextContainer frameData) {
+			public override void RecordRenderGraph (RenderGraph renderGraph, ContextContainer frameData) 
+			{
 				var cameraData = frameData.Get<UniversalCameraData>();
 				var resourceData = frameData.Get<UniversalResourceData>();
 
@@ -48,15 +54,16 @@ namespace Drawbug.PhysicsExtension {
 
 		private DrawbugURPRenderPass _scriptablePass;
 
-		public override void Create () {
+		public override void Create () 
+		{
 			_scriptablePass = new DrawbugURPRenderPass
 			{
 				renderPassEvent = RenderPassEvent.AfterRenderingPostProcessing
 			};
 		}
 
-		/// <summary>This method is called when setting up the renderer once per-camera</summary>
-		public override void AddRenderPasses (ScriptableRenderer renderer, ref RenderingData renderingData) {
+		public override void AddRenderPasses (ScriptableRenderer renderer, ref RenderingData renderingData) 
+		{
 			AddRenderPasses(renderer);
 		}
 		

@@ -3,7 +3,7 @@ using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Drawbug.PhysicsExtension
+namespace Drawbug
 {
     public class Draw : IDisposable
     {

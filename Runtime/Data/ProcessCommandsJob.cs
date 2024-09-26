@@ -6,7 +6,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Drawbug.PhysicsExtension
+namespace Drawbug
 {
     [BurstCompile]
     internal unsafe partial struct ProcessCommandsJob : IJob

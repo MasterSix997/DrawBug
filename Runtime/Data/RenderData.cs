@@ -5,7 +5,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 
-namespace Drawbug.PhysicsExtension
+namespace Drawbug
 {
     [BurstCompile]
     internal struct RenderData : IDisposable
