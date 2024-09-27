@@ -9,10 +9,6 @@ using UnityEngine;
 
 namespace Drawbug
 {
-    // [NativeContainer]
-    // [DebuggerDisplay("Length = {_bufferData == null ? default : Length}, Capacity = {_bufferData == null ? default : Capacity}")]
-    // [DebuggerTypeProxy(typeof(WireBufferDebugView))]
-    // [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
     [StructLayout(LayoutKind.Sequential)]
     [BurstCompile]
     internal unsafe struct WireBuffer : IDisposable
@@ -73,10 +69,6 @@ namespace Drawbug
         internal void Submit(float3 point1, float3 point2, uint dataIndex)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            // If the container is currently not allowed to write to the buffer
-            // then this will throw an exception.
-            // This handles all cases, from already disposed containers
-            // to safe multithreaded access.
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
             _bufferData->Submit(point1, point2, dataIndex);
@@ -86,10 +78,6 @@ namespace Drawbug
         internal void Submit(NativeArray<float3> points, int length, uint dataIndex)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            // If the container is currently not allowed to write to the buffer
-            // then this will throw an exception.
-            // This handles all cases, from already disposed containers
-            // to safe multithreaded access.
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
             _bufferData->Submit(points, length, dataIndex);
@@ -99,10 +87,6 @@ namespace Drawbug
         internal void Submit(float3* points, int length, uint dataIndex)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            // If the container is currently not allowed to write to the buffer
-            // then this will throw an exception.
-            // This handles all cases, from already disposed containers
-            // to safe multithreaded access.
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
             _bufferData->Submit(points, length, dataIndex);
@@ -112,10 +96,6 @@ namespace Drawbug
         internal void FillBuffer(GraphicsBuffer buffer)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            // If the container is currently not allowed to read from the buffer
-            // then this will throw an exception.
-            // This handles all cases, from already disposed containers
-            // to safe multithreaded access.
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
 

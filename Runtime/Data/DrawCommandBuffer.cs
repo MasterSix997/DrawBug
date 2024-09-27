@@ -78,8 +78,8 @@ namespace Drawbug
         {
             public float3 a, b;
         }
-        
-        internal struct LineDataVector3 {
+
+        private struct LineDataVector3 {
             public Vector3 a, b;
         }
         
@@ -165,8 +165,7 @@ namespace Drawbug
         internal unsafe void Add<T>(T value) where T : struct {
             var valueSize = UnsafeUtility.SizeOf<T>();
             var bufferSize = _buffer.Length;
-            // We assume this because the Reserve function has already taken care of that.
-            // This removes a few branches from the assembly when running in burst.
+            
             Unity.Burst.CompilerServices.Hint.Assume(_buffer.Ptr != null);
             Unity.Burst.CompilerServices.Hint.Assume(_buffer.Ptr + bufferSize != null);
 

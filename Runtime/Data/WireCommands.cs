@@ -1,5 +1,4 @@
-﻿using Unity.Collections;
-using Unity.Mathematics;
+﻿using Unity.Mathematics;
 
 namespace Drawbug
 {
@@ -70,20 +69,6 @@ namespace Drawbug
             count += CircleShape(count, hollowCircleData.position, hollowCircleData.outerRadius, hollowCircleData.rotation);
             
             WireBuffer.Submit(temp3, count, _currentStyleId);
-            
-            // AddCircle(new DrawCommandBuffer.CircleData
-            // {
-            //     position = hollowCircleData.position,
-            //     radius = hollowCircleData.innerRadius,
-            //     rotation = hollowCircleData.rotation
-            // });
-            //
-            // AddCircle(new DrawCommandBuffer.CircleData
-            // {
-            //     position = hollowCircleData.position,
-            //     radius = hollowCircleData.outerRadius,
-            //     rotation = hollowCircleData.rotation
-            // });
         }
 
         private int CapsuleShape(int tempOffset, float3 position, float2 size, quaternion rotation, bool isVertical)
@@ -144,7 +129,6 @@ namespace Drawbug
 
             if ((isVertical && size.y <= size.x) || (!isVertical && size.x <= size.y))
             {
-                //WireBuffer.Submit(temp3, segments * 2, _currentStyleId);
                 return segments * 2;
             }
             
@@ -175,7 +159,6 @@ namespace Drawbug
             temp3[tempOffset + segments * 2 + 2] = topLeft;
             temp3[tempOffset + segments * 2 + 3] = downLeft;
             
-            //WireBuffer.Submit(temp3, segments * 2 + 4, _currentStyleId);
             return segments * 2 + 4;
         }
         
@@ -269,26 +252,6 @@ namespace Drawbug
             count += CircleShape(count, sphereData.position, sphereData.radius, quaternion.Euler(0, math.radians(90), math.radians(90)));
             
             WireBuffer.Submit(temp3, count, _currentStyleId);
-            // AddCircle(new DrawCommandBuffer.CircleData
-            // {
-            //     position = sphereData.position,
-            //     radius = sphereData.radius,
-            //     rotation = quaternion.Euler(0, 0, 0)
-            // });
-            //
-            // AddCircle(new DrawCommandBuffer.CircleData
-            // {
-            //     position = sphereData.position,
-            //     radius = sphereData.radius,
-            //     rotation = quaternion.Euler(math.radians(90), 0, 0)
-            // });
-            //
-            // AddCircle(new DrawCommandBuffer.CircleData
-            // {
-            //     position = sphereData.position,
-            //     radius = sphereData.radius,
-            //     rotation = quaternion.Euler(0, math.radians(90), math.radians(90))
-            // });
         }
 
         private void AddCylinder(DrawCommandBuffer.CylinderData cylinderData)
@@ -342,48 +305,16 @@ namespace Drawbug
 
             var count = CapsuleShape(0, position, size, rotation, true);
             count += CapsuleShape(count, position, size, math.mul(rotation, quaternion.RotateY(math.radians(90))), true);
-            // AddCapsule(new DrawCommandBuffer.CapsuleData
-            // {
-            //     position = position,
-            //     size = size,
-            //     rotation = rotation,
-            //     isVertical = true
-            // });
-            // AddCapsule(new DrawCommandBuffer.CapsuleData
-            // {
-            //     position = position,
-            //     size = size,
-            //     rotation = math.mul(rotation, quaternion.RotateY(math.radians(90))),
-            //     isVertical = true
-            // });
 
             size /= 2;
             if (height > radius * 2)
             {
                 count += CircleShape(count, position + math.mul(rotation, new float3(0, size.y - size.x, 0)), radius, math.mul(rotation, quaternion.RotateX(math.radians(90))));
                 count += CircleShape(count, position + math.mul(rotation, new float3(0, -size.y + size.x, 0)), radius, math.mul(rotation, quaternion.RotateX(math.radians(90))));
-                // AddCircle(new DrawCommandBuffer.CircleData
-                // {
-                //     position = position + math.mul(rotation, new float3(0, size.y - size.x, 0)),
-                //     radius = radius,
-                //     rotation = math.mul(rotation, quaternion.RotateX(math.radians(90)))
-                // });
-                // AddCircle(new DrawCommandBuffer.CircleData
-                // {
-                //     position = position + math.mul(rotation, -new float3(0, size.y - size.x, 0)),
-                //     radius = radius,
-                //     rotation = math.mul(rotation, quaternion.RotateX(math.radians(90)))
-                // });
             }
             else
             {
                 count += CircleShape(count, position, radius, math.mul(rotation, quaternion.RotateX(math.radians(90))));
-                // AddCircle(new DrawCommandBuffer.CircleData
-                // {
-                //     position = position,
-                //     radius = radius,
-                //     rotation = math.mul(rotation, quaternion.RotateX(math.radians(90)))
-                // });
             }
             
             WireBuffer.Submit(temp3, count, _currentStyleId);
