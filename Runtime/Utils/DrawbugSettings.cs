@@ -6,9 +6,9 @@ namespace Drawbug
     public class DrawbugSettings : ScriptableObject
     {
 #if DRAWBUG
-        internal const string DrawbugSettingsPath = "Packages/com.zanoking.drawbug/DrawbugSettings.asset";
+        internal const string DrawbugSettingsPath = "Packages/com.mastersix.drawbug/DrawbugSettings.asset";
 #else
-        internal const string DrawbugSettingsPath = "Assets/com.zanoking.drawbug/DrawbugSettings.asset";
+        internal const string DrawbugSettingsPath = "Assets/com.mastersix.drawbug/DrawbugSettings.asset";
 #endif
         
         [Range(0, 1)] public float occludedWireOpacity;

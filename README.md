@@ -5,7 +5,7 @@
 
 Install from Package Manager.
 ```
-https://github.com/MasterSix997/DrawBug.git
+https://github.com/MasterSix997/Drawbug.git
 ```
 
 ## Disclaimer
