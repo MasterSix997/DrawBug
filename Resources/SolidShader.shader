@@ -1,4 +1,4 @@
-﻿Shader "Unlit/SolidShader"
+﻿Shader "DrawBug/SolidShader"
 {
     Properties
     {
@@ -31,7 +31,7 @@
                 float3 pos = _Positions[vertex_id].position;
                 o.position = mul(UNITY_MATRIX_VP, float4(pos, 1.0f));
                 
-                o.color = get_style(vertex_id).color;
+                o.color = get_color(vertex_id);
                 
                 return o;
             }
@@ -56,17 +56,17 @@
             interpolator vert (const uint vertex_id: SV_VertexID)
             {
                 interpolator o;
-
+                
                 float3 pos = _Positions[vertex_id].position;
                 o.position = mul(UNITY_MATRIX_VP, float4(pos, 1.0f));
 
-                style_data style = get_style(vertex_id);
+                float4 color = get_color(vertex_id);
 
-                if (style.forward)
-                    o.color = style.color;
-                else
-                    o.color = float4(style.color.rgb, style.color.a * _OccludedOpacity);
-                
+                if (!get_style(vertex_id).forward) {
+                    color.a *= _OccludedOpacity;
+                }
+
+                o.color = color;
                 return o;
             }
 

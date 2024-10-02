@@ -256,7 +256,7 @@ namespace Drawbug
             context.ExecuteCommandBuffer(_instance._cmd);
         }
         
-#if PACKAGE_UNIVERSAL_RP
+#if PACKAGE_UNIVERSAL_RP_17_0_0_OR_NEWER
         private void RenderGraphPass(RasterCommandBuffer cmd, Camera camera)
         {
             if (_hasPendingData)

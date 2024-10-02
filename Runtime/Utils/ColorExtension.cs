@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.Mathematics;
+using UnityEngine;
 
 namespace Drawbug
 {
@@ -32,6 +33,12 @@ namespace Drawbug
         {
             color.a *= multiplier;
             return color;
+        }
+        
+        //Temporary solution for easier conversion between float2 and float3
+        public static float3 to3(this float2 float2)
+        {
+            return new float3(float2.x, float2.y, 0);
         }
     }
 }

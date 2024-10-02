@@ -1,4 +1,8 @@
-﻿struct interpolator
+﻿#ifndef UNITY_COLORSPACE_GAMMA
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
+#endif
+
+struct interpolator
 {
     float4 position : SV_POSITION;
     float4 color : COLOR;
@@ -22,5 +26,14 @@ StructuredBuffer<style_data> _StyleData;
 style_data get_style(const uint vertex_id)
 {
     return _StyleData[_Positions[vertex_id].data_index];
+}
+
+float4 get_color(const uint vertex_id)
+{
+    #ifndef UNITY_COLORSPACE_GAMMA
+    return FastSRGBToLinear(_StyleData[_Positions[vertex_id].data_index].color);
+    #else
+    return _StyleData[_Positions[vertex_id].data_index].color;
+    #endif
 }
 

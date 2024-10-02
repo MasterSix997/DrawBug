@@ -11,13 +11,13 @@ namespace Drawbug
         internal const string DrawbugSettingsPath = "Assets/com.mastersix.drawbug/DrawbugSettings.asset";
 #endif
         
-        [Range(0, 1)] public float occludedWireOpacity;
-        [Range(0, 1)] public float occludedSolidOpacity;
+        [Range(0, 1)] public float occludedWireOpacity = 0.05f;
+        [Range(0, 1)] public float occludedSolidOpacity = 0.0f;
         
-        public bool drawPhysicsEnabled;
-        public Color hitColor;
-        public Color noHitColor;
-        public Color pointColor;
+        public bool drawPhysicsEnabled = true;
+        public Color hitColor = Color.green;
+        public Color noHitColor = Color.red;
+        public Color pointColor = Color.red;
 
         internal static DrawbugSettings GetOrCreateSettings()
         {

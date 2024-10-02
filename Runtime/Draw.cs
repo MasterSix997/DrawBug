@@ -76,7 +76,7 @@ namespace Drawbug
                 _solidRender.Render(cmd);
             }
         }
-        
+#if PACKAGE_UNIVERSAL_RP_17_0_0_OR_NEWER
         internal void Render(UnityEngine.Rendering.RasterCommandBuffer cmd)
         {
             if (_commandBuffer.HasData)
@@ -85,7 +85,7 @@ namespace Drawbug
                 _solidRender.Render(cmd);
             }
         }
-
+#endif
         public void Dispose()
         {
             _commandBuffer.Dispose();
@@ -135,11 +135,13 @@ namespace Drawbug
         /// <summary>
         /// Reset all modifications made in current frame.
         /// </summary>
-        public static unsafe void Reset()
+        public static void Reset()
         {
-            CurrentCommandBuffer->ResetStyle();
-            CurrentCommandBuffer->DrawMode(DrawMode.Wire);
-            CurrentCommandBuffer->Matrix(float4x4.identity);
+            DrawbugManager.Initialize();
+            var commandBuffer = Time.inFixedTimeStep ? _instance._fixedCommandBuffer : _instance._commandBuffer;
+            commandBuffer.ResetStyle();
+            commandBuffer.DrawMode(DrawMode.Wire);
+            commandBuffer.Matrix(float4x4.identity);
             _instance._currentDuration = 0;
         }
 

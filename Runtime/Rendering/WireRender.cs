@@ -64,6 +64,7 @@ namespace Drawbug
             cmd.DrawProcedural(Matrix4x4.identity, _material, -1, MeshTopology.Lines, _positionsCount);
         }
         
+#if PACKAGE_UNIVERSAL_RP_17_0_0_OR_NEWER
         internal void Render(UnityEngine.Rendering.RasterCommandBuffer cmd)
         {
             if (!CanRender)
@@ -71,6 +72,7 @@ namespace Drawbug
             
             cmd.DrawProcedural(Matrix4x4.identity, _material, -1, MeshTopology.Lines, _positionsCount);
         }
+#endif
 
         public void Dispose()
         {

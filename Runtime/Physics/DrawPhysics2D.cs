@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -138,26 +139,41 @@ namespace Drawbug.PhysicsExtension
         
         #region BoxCast All
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.BoxCastAll is deprecated. Use Physics2D.BoxCast instead.", false)]
+#endif
         public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction)
         {
             return BoxCastAll(origin, size, angle, direction, _maxDistance, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.BoxCastAll is deprecated. Use Physics2D.BoxCast instead.", false)]
+#endif
         public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance)
         {
             return BoxCastAll(origin, size, angle, direction, distance, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.BoxCastAll is deprecated. Use Physics2D.BoxCast instead.", false)]
+#endif
         public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask)
         {
             return BoxCastAll(origin, size, angle, direction, distance, layerMask, -_maxDistance, _maxDistance);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.BoxCastAll is deprecated. Use Physics2D.BoxCast instead.", false)]
+#endif
         public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask, float minDepth)
         {
             return BoxCastAll(origin, size, angle, direction, distance, layerMask, minDepth, _maxDistance);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.BoxCastAll is deprecated. Use Physics2D.BoxCast instead.", false)]
+#endif
         public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
         {
             direction.Normalize();
@@ -192,26 +208,41 @@ namespace Drawbug.PhysicsExtension
         
         #region BoxCast non alloc
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.BoxCastNonAlloc is deprecated. Use Physics2D.BoxCast instead.", false)]
+#endif
         public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results)
         {
             return BoxCastNonAlloc(origin, size, angle, direction, results, _maxDistance, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.BoxCastNonAlloc is deprecated. Use Physics2D.BoxCast instead.", false)]
+#endif
         public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, float distance)
         {
             return BoxCastNonAlloc(origin, size, angle, direction, results, distance, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.BoxCastNonAlloc is deprecated. Use Physics2D.BoxCast instead.", false)]
+#endif
         public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
         {
             return BoxCastNonAlloc(origin, size, angle, direction, results, distance, layerMask, -_maxDistance, _maxDistance);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.BoxCastNonAlloc is deprecated. Use Physics2D.BoxCast instead.", false)]
+#endif
         public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
         {
             return BoxCastNonAlloc(origin, size, angle, direction, results, distance, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.BoxCastNonAlloc is deprecated. Use Physics2D.BoxCast instead.", false)]
+#endif
         public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth, float maxDepth)
         {
             direction.Normalize();
@@ -360,26 +391,41 @@ namespace Drawbug.PhysicsExtension
 
         #region CapsuleCast All
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CapsuleCastAll is deprecated. Use Physics2D.CapsuleCast instead.", false)]
+#endif
         public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction)
         {
             return CapsuleCastAll(origin, size, capsuleDirection, angle, direction, _maxDistance, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CapsuleCastAll is deprecated. Use Physics2D.CapsuleCast instead.", false)]
+#endif
         public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance)
         {
             return CapsuleCastAll(origin, size, capsuleDirection, angle, direction, distance, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CapsuleCastAll is deprecated. Use Physics2D.CapsuleCast instead.", false)]
+#endif
         public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask)
         {
             return CapsuleCastAll(origin, size, capsuleDirection, angle, direction, distance, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CapsuleCastAll is deprecated. Use Physics2D.CapsuleCast instead.", false)]
+#endif
         public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask, float minDepth)
         {
             return CapsuleCastAll(origin, size, capsuleDirection, angle, direction, distance, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CapsuleCastAll is deprecated. Use Physics2D.CapsuleCast instead.", false)]
+#endif
         public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
         {
             direction.Normalize();
@@ -413,28 +459,43 @@ namespace Drawbug.PhysicsExtension
 
         #region CapsuleCast non alloc
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CapsuleCastNonAlloc is deprecated. Use Physics2D.CapsuleCast instead.", false)]
+#endif
         public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results)
         {
             return CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results, _maxDistance, Physics2D.AllLayers, -_maxDistance,
                 _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CapsuleCastNonAlloc is deprecated. Use Physics2D.CapsuleCast instead.", false)]
+#endif
         public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, float distance)
         {
             return CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results, distance, Physics2D.AllLayers, -_maxDistance,
                 _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CapsuleCastNonAlloc is deprecated. Use Physics2D.CapsuleCast instead.", false)]
+#endif
         public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
         {
             return CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results, distance, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CapsuleCastNonAlloc is deprecated. Use Physics2D.CapsuleCast instead.", false)]
+#endif
         public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
         {
             return CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results, distance, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CapsuleCastNonAlloc is deprecated. Use Physics2D.CapsuleCast instead.", false)]
+#endif
         public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth, float maxDepth)
         {
             direction.Normalize();
@@ -576,26 +637,41 @@ namespace Drawbug.PhysicsExtension
 
         #region CircleCast All
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CircleCastAll is deprecated. Use Physics2D.CircleCast instead.", false)]
+#endif
         public static RaycastHit2D[] CircleCastAll(Vector2 origin, float radius, Vector2 direction)
         {
             return CircleCastAll(origin, radius, direction, _maxDistance, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CircleCastAll is deprecated. Use Physics2D.CircleCast instead.", false)]
+#endif
         public static RaycastHit2D[] CircleCastAll(Vector2 origin, float radius, Vector2 direction, float distance)
         {
             return CircleCastAll(origin, radius, direction, distance, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CircleCastAll is deprecated. Use Physics2D.CircleCast instead.", false)]
+#endif
         public static RaycastHit2D[] CircleCastAll(Vector2 origin, float radius, Vector2 direction, float distance, int layerMask)
         {
             return CircleCastAll(origin, radius, direction, distance, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CircleCastAll is deprecated. Use Physics2D.CircleCast instead.", false)]
+#endif
         public static RaycastHit2D[] CircleCastAll(Vector2 origin, float radius, Vector2 direction, float distance, int layerMask, float minDepth)
         {
             return CircleCastAll(origin, radius, direction, distance, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CircleCastAll is deprecated. Use Physics2D.CircleCast instead.", false)]
+#endif
         public static RaycastHit2D[] CircleCastAll(Vector2 origin, float radius, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
         {
             direction.Normalize();
@@ -624,26 +700,41 @@ namespace Drawbug.PhysicsExtension
         
         #region CircleCast non alloc
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CircleCastNonAlloc is deprecated. Use Physics2D.CircleCast instead.", false)]
+#endif
         public static int CircleCastNonAlloc(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] results)
         {
             return CircleCastNonAlloc(origin, radius, direction, results, _maxDistance, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CircleCastNonAlloc is deprecated. Use Physics2D.CircleCast instead.", false)]
+#endif
         public static int CircleCastNonAlloc(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] results, float distance)
         {
             return CircleCastNonAlloc(origin, radius, direction, results, distance, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CircleCastNonAlloc is deprecated. Use Physics2D.CircleCast instead.", false)]
+#endif
         public static int CircleCastNonAlloc(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
         {
             return CircleCastNonAlloc(origin, radius, direction, results, distance, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CircleCastNonAlloc is deprecated. Use Physics2D.CircleCast instead.", false)]
+#endif
         public static int CircleCastNonAlloc(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
         {
             return CircleCastNonAlloc(origin, radius, direction, results, distance, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.CircleCastNonAlloc is deprecated. Use Physics2D.CircleCast instead.", false)]
+#endif
         public static int CircleCastNonAlloc(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth, float maxDepth)
         {
             direction.Normalize();
@@ -778,21 +869,33 @@ namespace Drawbug.PhysicsExtension
 
         #region LineCast All
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.LinecastAll is deprecated. Use Physics2D.Linecast instead.", false)]
+#endif
         public static RaycastHit2D[] LinecastAll(Vector2 start, Vector2 end)
         {
             return LinecastAll(start, end, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.LinecastAll is deprecated. Use Physics2D.Linecast instead.", false)]
+#endif
         public static RaycastHit2D[] LinecastAll(Vector2 start, Vector2 end, int layerMask)
         {
             return LinecastAll(start, end, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.LinecastAll is deprecated. Use Physics2D.Linecast instead.", false)]
+#endif
         public static RaycastHit2D[] LinecastAll(Vector2 start, Vector2 end, int layerMask, float minDepth)
         {
             return LinecastAll(start, end, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.LinecastAll is deprecated. Use Physics2D.Linecast instead.", false)]
+#endif
         public static RaycastHit2D[] LinecastAll(Vector2 start, Vector2 end, int layerMask, float minDepth, float maxDepth)
         {
             var hitInfo = Physics2D.LinecastAll(start, end, layerMask, minDepth, maxDepth);
@@ -826,21 +929,33 @@ namespace Drawbug.PhysicsExtension
         
         #region LineCast non alloc
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.LinecastNonAlloc is deprecated. Use Physics2D.Linecast instead.", false)]
+#endif
         public static int LinecastNonAlloc(Vector2 start, Vector2 end, RaycastHit2D[] results)
         {
             return LinecastNonAlloc(start, end, results, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.LinecastNonAlloc is deprecated. Use Physics2D.Linecast instead.", false)]
+#endif
         public static int LinecastNonAlloc(Vector2 start, Vector2 end, RaycastHit2D[] results, int layerMask)
         {
             return LinecastNonAlloc(start, end, results, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.LinecastNonAlloc is deprecated. Use Physics2D.Linecast instead.", false)]
+#endif
         public static int LinecastNonAlloc(Vector2 start, Vector2 end, RaycastHit2D[] results, int layerMask, float minDepth)
         {
             return LinecastNonAlloc(start, end, results, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.LinecastNonAlloc is deprecated. Use Physics2D.Linecast instead.", false)]
+#endif
         public static int LinecastNonAlloc(Vector2 start, Vector2 end, RaycastHit2D[] results, int layerMask, float minDepth, float maxDepth)
         {
             var size = Physics2D.LinecastNonAlloc(start, end, results, layerMask, minDepth, maxDepth);
@@ -928,21 +1043,33 @@ namespace Drawbug.PhysicsExtension
 
         #region OverlapArea all
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapAreaAll is deprecated. Use Physics2D.OverlapArea instead.", false)]
+#endif
         public static Collider2D[] OverlapAreaAll(Vector2 pointA, Vector2 pointB)
         {
             return OverlapAreaAll(pointA, pointB, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapAreaAll is deprecated. Use Physics2D.OverlapArea instead.", false)]
+#endif
         public static Collider2D[] OverlapAreaAll(Vector2 pointA, Vector2 pointB, int layerMask)
         {
             return OverlapAreaAll(pointA, pointB, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapAreaAll is deprecated. Use Physics2D.OverlapArea instead.", false)]
+#endif
         public static Collider2D[] OverlapAreaAll(Vector2 pointA, Vector2 pointB, int layerMask, float minDepth)
         {
             return OverlapAreaAll(pointA, pointB, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapAreaAll is deprecated. Use Physics2D.OverlapArea instead.", false)]
+#endif
         public static Collider2D[] OverlapAreaAll(Vector2 pointA, Vector2 pointB, int layerMask, float minDepth, float maxDepth)
         {
             var colliders = Physics2D.OverlapAreaAll(pointA, pointB, layerMask, minDepth, maxDepth);
@@ -957,21 +1084,33 @@ namespace Drawbug.PhysicsExtension
         
         #region OverlapArea non alloc
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapAreaNonAlloc is deprecated. Use Physics2D.OverlapArea instead.", false)]
+#endif
         public static int OverlapAreaNonAlloc(Vector2 pointA, Vector2 pointB, Collider2D[] results)
         {
             return OverlapAreaNonAlloc(pointA, pointB, results, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapAreaNonAlloc is deprecated. Use Physics2D.OverlapArea instead.", false)]
+#endif
         public static int OverlapAreaNonAlloc(Vector2 pointA, Vector2 pointB, Collider2D[] results, int layerMask)
         {
             return OverlapAreaNonAlloc(pointA, pointB, results, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapAreaNonAlloc is deprecated. Use Physics2D.OverlapArea instead.", false)]
+#endif
         public static int OverlapAreaNonAlloc(Vector2 pointA, Vector2 pointB, Collider2D[] results, int layerMask, float minDepth)
         {
             return OverlapAreaNonAlloc(pointA, pointB, results, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapAreaNonAlloc is deprecated. Use Physics2D.OverlapArea instead.", false)]
+#endif
         public static int OverlapAreaNonAlloc(Vector2 pointA, Vector2 pointB, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
         {
             var size = Physics2D.OverlapAreaNonAlloc(pointA, pointB, results, layerMask, minDepth, maxDepth);
@@ -1042,21 +1181,33 @@ namespace Drawbug.PhysicsExtension
         
         #region OverlapBox all
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapBoxAll is deprecated. Use Physics2D.OverlapBox instead.", false)]
+#endif
         public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angle)
         {
             return OverlapBoxAll(point, size, angle, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapBoxAll is deprecated. Use Physics2D.OverlapBox instead.", false)]
+#endif
         public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angle, int layerMask)
         {
             return OverlapBoxAll(point, size, angle, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapBoxAll is deprecated. Use Physics2D.OverlapBox instead.", false)]
+#endif
         public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angle, int layerMask, float minDepth)
         {
             return OverlapBoxAll(point, size, angle, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapBoxAll is deprecated. Use Physics2D.OverlapBox instead.", false)]
+#endif
         public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angle, int layerMask, float minDepth, float maxDepth)
         {
             var colliders = Physics2D.OverlapBoxAll(point, size, angle, layerMask, minDepth, maxDepth);
@@ -1072,21 +1223,33 @@ namespace Drawbug.PhysicsExtension
         
         #region OverlapBox non alloc
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapBoxNonAlloc is deprecated. Use Physics2D.OverlapBox instead.", false)]
+#endif
         public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angle, Collider2D[] results)
         {
             return OverlapBoxNonAlloc(point, size, angle, results, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapBoxNonAlloc is deprecated. Use Physics2D.OverlapBox instead.", false)]
+#endif
         public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angle, Collider2D[] results, int layerMask)
         {
             return OverlapBoxNonAlloc(point, size, angle, results, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapBoxNonAlloc is deprecated. Use Physics2D.OverlapBox instead.", false)]
+#endif
         public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angle, Collider2D[] results, int layerMask, float minDepth)
         {
             return OverlapBoxNonAlloc(point, size, angle, results, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapBoxNonAlloc is deprecated. Use Physics2D.OverlapBox instead.", false)]
+#endif
         public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angle, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
         {
             var count = Physics2D.OverlapBoxNonAlloc(point, size, angle, results, layerMask, minDepth, maxDepth);
@@ -1158,21 +1321,33 @@ namespace Drawbug.PhysicsExtension
         
         #region OverlapCapsule all
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCapsuleAll is deprecated. Use Physics2D.OverlapCapsule instead.", false)]
+#endif
         public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle)
         {
             return OverlapCapsuleAll(point, size, direction, angle, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCapsuleAll is deprecated. Use Physics2D.OverlapCapsule instead.", false)]
+#endif
         public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask)
         {
             return OverlapCapsuleAll(point, size, direction, angle, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCapsuleAll is deprecated. Use Physics2D.OverlapCapsule instead.", false)]
+#endif
         public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask, float minDepth)
         {
             return OverlapCapsuleAll(point, size, direction, angle, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCapsuleAll is deprecated. Use Physics2D.OverlapCapsule instead.", false)]
+#endif
         public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask, float minDepth, float maxDepth)
         {
             var colliders = Physics2D.OverlapCapsuleAll(point, size, direction, angle, layerMask, minDepth, maxDepth);
@@ -1188,21 +1363,33 @@ namespace Drawbug.PhysicsExtension
         
         #region OverlapCapsule non alloc
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCapsuleNonAlloc is deprecated. Use Physics2D.OverlapCapsule instead.", false)]
+#endif
         public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, Collider2D[] results)
         {
             return OverlapCapsuleNonAlloc(point, size, direction, angle, results, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCapsuleNonAlloc is deprecated. Use Physics2D.OverlapCapsule instead.", false)]
+#endif
         public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, Collider2D[] results, int layerMask)
         {
             return OverlapCapsuleNonAlloc(point, size, direction, angle, results, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCapsuleNonAlloc is deprecated. Use Physics2D.OverlapCapsule instead.", false)]
+#endif
         public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, Collider2D[] results, int layerMask, float minDepth,  PhysicsStyle physicsStyle = default)
         {
             return OverlapCapsuleNonAlloc(point, size, direction, angle, results, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCapsuleNonAlloc is deprecated. Use Physics2D.OverlapCapsule instead.", false)]
+#endif
         public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
         {
             var count = Physics2D.OverlapCapsuleNonAlloc(point, size, direction, angle, results, layerMask, minDepth, maxDepth);
@@ -1271,21 +1458,33 @@ namespace Drawbug.PhysicsExtension
         
         #region OverlapCircle all
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCircleAll is deprecated. Use Physics2D.OverlapCircle instead.", false)]
+#endif
         public static Collider2D[] OverlapCircleAll(Vector2 point, float radius)
         {
             return OverlapCircleAll(point, radius, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCircleAll is deprecated. Use Physics2D.OverlapCircle instead.", false)]
+#endif
         public static Collider2D[] OverlapCircleAll(Vector2 point, float radius, int layerMask)
         {
             return OverlapCircleAll(point, radius, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCircleAll is deprecated. Use Physics2D.OverlapCircle instead.", false)]
+#endif
         public static Collider2D[] OverlapCircleAll(Vector2 point, float radius, int layerMask, float minDepth)
         {
             return OverlapCircleAll(point, radius, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCircleAll is deprecated. Use Physics2D.OverlapCircle instead.", false)]
+#endif
         public static Collider2D[] OverlapCircleAll(Vector2 point, float radius, int layerMask, float minDepth, float maxDepth)
         {
             var colliders = Physics2D.OverlapCircleAll(point, radius, layerMask, minDepth, maxDepth);
@@ -1300,21 +1499,33 @@ namespace Drawbug.PhysicsExtension
         
         #region OverlapCircle non alloc
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCircleAll is deprecated. Use Physics2D.OverlapCircle instead.", false)]
+#endif
         public static int OverlapCircleNonAlloc(Vector2 point, float radius, Collider2D[] results)
         {
             return OverlapCircleNonAlloc(point, radius, results, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCircleAll is deprecated. Use Physics2D.OverlapCircle instead.", false)]
+#endif
         public static int OverlapCircleNonAlloc(Vector2 point, float radius, Collider2D[] results, int layerMask)
         {
             return OverlapCircleNonAlloc(point, radius, results, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCircleAll is deprecated. Use Physics2D.OverlapCircle instead.", false)]
+#endif
         public static int OverlapCircleNonAlloc(Vector2 point, float radius, Collider2D[] results, int layerMask, float minDepth)
         {
             return OverlapCircleNonAlloc(point, radius, results, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCircleAll is deprecated. Use Physics2D.OverlapCircle instead.", false)]
+#endif
         public static int OverlapCircleNonAlloc(Vector2 point, float radius, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
         {
             var count = Physics2D.OverlapCircleNonAlloc(point, radius, results, layerMask, minDepth, maxDepth);
@@ -1382,21 +1593,33 @@ namespace Drawbug.PhysicsExtension
         
         #region OverlapPoint all
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCircleAll is deprecated. Use Physics2D.OverlapPoint instead.", false)]
+#endif
         public static Collider2D[] OverlapPointAll(Vector2 point)
         {
             return OverlapPointAll(point, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCircleAll is deprecated. Use Physics2D.OverlapPoint instead.", false)]
+#endif
         public static Collider2D[] OverlapPointAll(Vector2 point, int layerMask)
         {
             return OverlapPointAll(point, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCircleAll is deprecated. Use Physics2D.OverlapPoint instead.", false)]
+#endif
         public static Collider2D[] OverlapPointAll(Vector2 point, int layerMask, float minDepth)
         {
             return OverlapPointAll(point, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapCircleAll is deprecated. Use Physics2D.OverlapPoint instead.", false)]
+#endif
         public static Collider2D[] OverlapPointAll(Vector2 point, int layerMask, float minDepth, float maxDepth)
         {
             var colliders = Physics2D.OverlapPointAll(point, layerMask, minDepth, maxDepth);
@@ -1411,21 +1634,33 @@ namespace Drawbug.PhysicsExtension
         
         #region OverlapPoint non alloc
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapPointNonAlloc is deprecated. Use Physics2D.OverlapPoint instead.", false)]
+#endif
         public static int OverlapPointNonAlloc(Vector2 point, Collider2D[] results)
         {
             return OverlapPointNonAlloc(point, results, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapPointNonAlloc is deprecated. Use Physics2D.OverlapPoint instead.", false)]
+#endif
         public static int OverlapPointNonAlloc(Vector2 point, Collider2D[] results, int layerMask)
         {
             return OverlapPointNonAlloc(point, results, layerMask, -_maxDistance, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapPointNonAlloc is deprecated. Use Physics2D.OverlapPoint instead.", false)]
+#endif
         public static int OverlapPointNonAlloc(Vector2 point, Collider2D[] results, int layerMask, float minDepth)
         {
             return OverlapPointNonAlloc(point, results, layerMask, minDepth, _maxDistance);
         }
         
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.OverlapPointNonAlloc is deprecated. Use Physics2D.OverlapPoint instead.", false)]
+#endif
         public static int OverlapPointNonAlloc(Vector2 point, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
         {
             var count = Physics2D.OverlapPointNonAlloc(point, results, layerMask, minDepth, maxDepth);
@@ -1538,26 +1773,41 @@ namespace Drawbug.PhysicsExtension
         
         #region RayCast all
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.RaycastAll is deprecated. Use Physics2D.Raycast instead.", false)]
+#endif
         public static RaycastHit2D[] RaycastAll(Vector2 origin, Vector2 direction)
         {
             return RaycastAll(origin, direction, _maxDistance, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.RaycastAll is deprecated. Use Physics2D.Raycast instead.", false)]
+#endif
         public static RaycastHit2D[] RaycastAll(Vector2 origin, Vector2 direction, float distance)
         {
             return RaycastAll(origin, direction, distance, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.RaycastAll is deprecated. Use Physics2D.Raycast instead.", false)]
+#endif
         public static RaycastHit2D[] RaycastAll(Vector2 origin, Vector2 direction, float distance, int layerMask)
         {
             return RaycastAll(origin, direction, distance, layerMask, -_maxDistance, _maxDistance);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.RaycastAll is deprecated. Use Physics2D.Raycast instead.", false)]
+#endif
         public static RaycastHit2D[] RaycastAll(Vector2 origin, Vector2 direction, float distance, int layerMask, float minDepth)
         {
             return RaycastAll(origin, direction, distance, layerMask, minDepth, _maxDistance);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.RaycastAll is deprecated. Use Physics2D.Raycast instead.", false)]
+#endif
         public static RaycastHit2D[] RaycastAll(Vector2 origin, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
         {
             var raycastInfo = Physics2D.RaycastAll(origin, direction, distance, layerMask, minDepth, maxDepth);
@@ -1589,26 +1839,41 @@ namespace Drawbug.PhysicsExtension
         
         #region RayCast non alloc
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.RaycastNonAlloc is deprecated. Use Physics2D.Raycast instead.", false)]
+#endif
         public static int RaycastNonAlloc(Vector2 origin, Vector2 direction, RaycastHit2D[] results)
         {
             return RaycastNonAlloc(origin, direction, results, _maxDistance, Physics2D.AllLayers, -_maxDistance, _maxDistance);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.RaycastNonAlloc is deprecated. Use Physics2D.Raycast instead.", false)]
+#endif
         public static int RaycastNonAlloc(Vector2 origin, Vector2 direction, RaycastHit2D[] results, float distance)
         {
             return RaycastNonAlloc(origin, direction, results, distance, Physics2D.AllLayers);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.RaycastNonAlloc is deprecated. Use Physics2D.Raycast instead.", false)]
+#endif
         public static int RaycastNonAlloc(Vector2 origin, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
         {
             return RaycastNonAlloc(origin, direction, results, distance, layerMask);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.RaycastNonAlloc is deprecated. Use Physics2D.Raycast instead.", false)]
+#endif
         public static int RaycastNonAlloc(Vector2 origin, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
         {
             return RaycastNonAlloc(origin, direction, results, distance, layerMask, minDepth);
         }
 
+#if UNITY_2023_1_OR_NEWER
+        [Obsolete("Physics2D.RaycastNonAlloc is deprecated. Use Physics2D.Raycast instead.", false)]
+#endif
         public static int RaycastNonAlloc(Vector2 origin, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth, float maxDepth)
         {
             var size = Physics2D.RaycastNonAlloc(origin, direction, results, distance, layerMask, minDepth, maxDepth);
