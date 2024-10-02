@@ -1,5 +1,4 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Drawbug
 {
@@ -36,10 +35,12 @@ namespace Drawbug
             }
             return settings;
         }
- 
-        internal static SerializedObject GetSerializedSettings()
+        
+#if UNITY_EDITOR
+        internal static UnityEditor.SerializedObject GetSerializedSettings()
         {
-            return new SerializedObject(GetOrCreateSettings());
+            return new UnityEditor.SerializedObject(GetOrCreateSettings());
         }
+#endif
     }
 }
