@@ -27,7 +27,7 @@ namespace Drawbug
         private Draw _draw;
         private CommandBuffer _cmd;
         private bool _isEnabled;
-        private DrawbugSettings _settings;
+        [SerializeField] private DrawbugSettings _settings;
         
         private RenderPipelineOption _currentRenderPipeline = RenderPipelineOption.BuiltIn;
 #if PACKAGE_UNIVERSAL_RP
@@ -100,7 +100,7 @@ namespace Drawbug
             }
             
             _isEnabled = true;
-            _settings = DrawbugSettings.GetOrCreateSettings();
+            _settings = _settings ?? DrawbugSettings.CreateDefaultSettings();
             _cmd = new CommandBuffer { name = "Drawbug" };
             _draw = new Draw();
 
