@@ -7,56 +7,76 @@ using UnityEngine.LowLevel;
 
 namespace Drawbug
 {
-    internal enum InsertType {
+    internal enum InsertType
+    {
         Before,
         After,
         First,
         Last,
     }
-    internal static class PlayerLoopInserter {
 
-        internal static void InsertSystem(Type thisLoop,Type parentLoopType,InsertType insertType,PlayerLoopSystem.UpdateFunction function) {
+    internal static class PlayerLoopInserter
+    {
+        internal static void InsertSystem(Type thisLoop, Type parentLoopType, InsertType insertType, PlayerLoopSystem.UpdateFunction function)
+        {
             var mySystem = new PlayerLoopSystem
             {
                 type = thisLoop,
                 updateDelegate = function,
             };
             var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
-            switch (insertType) {
-                case InsertType.First :{ var subSystemList = playerLoop.subSystemList.AsSpan();
-                    foreach (ref var subSystem in subSystemList) {
-                        if (subSystem.type == parentLoopType) {
+            switch (insertType)
+            {
+                case InsertType.First:
+                {
+                    var subSystemList = playerLoop.subSystemList.AsSpan();
+                    foreach (ref var subSystem in subSystemList)
+                    {
+                        if (subSystem.type == parentLoopType)
+                        {
                             subSystem.subSystemList = subSystem.subSystemList.Prepend(mySystem).ToArray();
                             break;
                         }
                     }
+
                     break;
                 }
-                case InsertType.Last :{ var subSystemList = playerLoop.subSystemList.AsSpan();
-                    foreach (ref var subSystem in subSystemList) {
-                        if (subSystem.type == parentLoopType) {
+                case InsertType.Last:
+                {
+                    var subSystemList = playerLoop.subSystemList.AsSpan();
+                    foreach (ref var subSystem in subSystemList)
+                    {
+                        if (subSystem.type == parentLoopType)
+                        {
                             subSystem.subSystemList = subSystem.subSystemList.Append(mySystem).ToArray();
                             break;
                         }
                     }
+
                     break;
                 }
-                case InsertType.Before :{ 
-                    var subSystemList = RemoveRunner(playerLoop,thisLoop);
-                    for (var index = 0; index < playerLoop.subSystemList.Length; index++) {
-                        if (subSystemList[index].type == parentLoopType) {
+                case InsertType.Before:
+                {
+                    var subSystemList = RemoveRunner(playerLoop, thisLoop);
+                    for (var index = 0; index < playerLoop.subSystemList.Length; index++)
+                    {
+                        if (subSystemList[index].type == parentLoopType)
+                        {
                             playerLoop.subSystemList = playerLoop.subSystemList.Insert(index, mySystem).ToArray();
                             break;
                         }
                     }
 
                     break;
-                } 
-                case InsertType.After:{ 
-                    var subSystemList = RemoveRunner(playerLoop,thisLoop);
-                    for (var index = 0; index < playerLoop.subSystemList.Length; index++) {
-                        if (subSystemList[index].type == parentLoopType) {
-                            playerLoop.subSystemList = playerLoop.subSystemList.Insert(index+1, mySystem).ToArray();
+                }
+                case InsertType.After:
+                {
+                    var subSystemList = RemoveRunner(playerLoop, thisLoop);
+                    for (var index = 0; index < playerLoop.subSystemList.Length; index++)
+                    {
+                        if (subSystemList[index].type == parentLoopType)
+                        {
+                            playerLoop.subSystemList = playerLoop.subSystemList.Insert(index + 1, mySystem).ToArray();
                             break;
                         }
                     }
@@ -64,45 +84,50 @@ namespace Drawbug
                     break;
                 }
             }
-           
-            
+
+
             PlayerLoop.SetPlayerLoop(playerLoop);
         }
 
-        private static PlayerLoopSystem[] RemoveRunner(PlayerLoopSystem loopSystem,  Type loopRunnerType)
+        private static PlayerLoopSystem[] RemoveRunner(PlayerLoopSystem loopSystem, Type loopRunnerType)
         {
-            
             return loopSystem.subSystemList
-                .Where(ls =>   ls.type != loopRunnerType)
+                .Where(ls => ls.type != loopRunnerType)
                 .ToArray();
         }
 
-        private static PlayerLoopSystem[] RemoveRunner(PlayerLoopSystem loopSystem,  Type loopRunnerType1,Type loopRunnerType2)
+        private static PlayerLoopSystem[] RemoveRunner(PlayerLoopSystem loopSystem, Type loopRunnerType1,
+            Type loopRunnerType2)
         {
-            
             return loopSystem.subSystemList
-                .Where(ls =>   ls.type != loopRunnerType1&&ls.type!=loopRunnerType2)
+                .Where(ls => ls.type != loopRunnerType1 && ls.type != loopRunnerType2)
                 .ToArray();
         }
-        internal static void RemoveRunner( Type loopRunnerType)
+
+        internal static void RemoveRunner(Type loopRunnerType)
         {
             var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
             playerLoop.subSystemList = RemoveRunner(playerLoop, loopRunnerType);
             PlayerLoop.SetPlayerLoop(playerLoop);
         }
-        internal static void RemoveRunner(  Type loopRunnerType1,Type loopRunnerType2)
+
+        internal static void RemoveRunner(Type loopRunnerType1, Type loopRunnerType2)
         {
             var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
-            playerLoop.subSystemList = RemoveRunner(playerLoop, loopRunnerType1,loopRunnerType2);
+            playerLoop.subSystemList = RemoveRunner(playerLoop, loopRunnerType1, loopRunnerType2);
             PlayerLoop.SetPlayerLoop(playerLoop);
         }
 
-        internal static IEnumerable<T> Insert<T>(this IEnumerable<T> enumerable,int index,T element) {
+        internal static IEnumerable<T> Insert<T>(this IEnumerable<T> enumerable, int index, T element)
+        {
             var current = 0;
-            foreach (var e in enumerable) {
-                if (current++ == index) {
+            foreach (var e in enumerable)
+            {
+                if (current++ == index)
+                {
                     yield return element;
                 }
+
                 yield return e;
             }
         }

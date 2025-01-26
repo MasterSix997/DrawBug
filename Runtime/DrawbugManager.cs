@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Drawbug.PhysicsExtension;
+using UnityEditor;
 #if PACKAGE_HIGH_DEFINITION_RP
 using UnityEngine.Rendering.HighDefinition;
 #endif
@@ -12,6 +13,7 @@ using UnityEngine.Rendering.Universal;
 
 namespace Drawbug
 {
+    [ExecuteInEditMode]
     internal class DrawbugManager : MonoBehaviour
     {
         internal enum RenderPipelineOption
@@ -40,18 +42,16 @@ namespace Drawbug
         {
             if(_instance)
                 return;
-            
-            if(!Application.isPlaying)
-                throw new InvalidOperationException("DrawbugManager can only be initialized in play mode.");
 
             var gameObj = new GameObject(string.Concat("DrawbugManager (", UnityEngine.Random.Range(0, 10000).ToString("0000"), ")"))
             {
-                hideFlags = HideFlags.NotEditable | HideFlags.HideInHierarchy | HideFlags.HideInInspector
+                hideFlags = HideFlags.NotEditable | HideFlags.DontSave// | HideFlags.HideInHierarchy | HideFlags.HideInInspector
             };
-            //Debug.Log(gameObj.name + " Initilized");
+            Debug.Log(gameObj.name + " Initilized");
             _instance = gameObj.AddComponent<DrawbugManager>();
-            
-            DontDestroyOnLoad(gameObj);
+
+            // if (Application.isPlaying)
+            //     DontDestroyOnLoad(gameObj);
         }
 
         private void UpdateCurrentRenderPipeline()
@@ -87,20 +87,31 @@ namespace Drawbug
 #endif
             _currentRenderPipeline = pipelineType != null ? RenderPipelineOption.Custom : RenderPipelineOption.BuiltIn;
         }
-
+        
+        void DelayedDestroy () 
+        {
+            EditorApplication.update -= DelayedDestroy;
+            // Check if the object still exists (it might have been destroyed in some other way already).
+            if (gameObject) DestroyImmediate(gameObject);
+        }
+        
         private void OnEnable()
         {
             if (!_instance)
                 _instance = this;
-
+            
             if (_instance != this)
             {
-                DestroyImmediate(gameObject);
+                // We cannot destroy the object while it is being enabled, so we need to delay it a bit
+#if UNITY_EDITOR
+                
+                EditorApplication.update += DelayedDestroy;
+#endif
                 return;
             }
             
             _isEnabled = true;
-            _settings = _settings ?? DrawbugSettings.CreateDefaultSettings();
+            _settings ??= DrawbugSettings.CreateDefaultSettings();
             _cmd = new CommandBuffer { name = "Drawbug" };
             _draw = new Draw();
 
@@ -117,20 +128,23 @@ namespace Drawbug
 #endif
             RenderPipelineManager.beginCameraRendering += BeginCameraRendering;
             RenderPipelineManager.endCameraRendering += EndCameraRendering;
+
+#if UNITY_EDITOR
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+#endif
         }
 
         private void OnDisable()
         {
             if (!_isEnabled)
                 return;
-
+            
             _isEnabled = false;
             _instance = null;
             RemoveFromPlayerLoop();
             _draw.Dispose();
             _cmd.Dispose();
             _settings = null;
-            //Debug.Log(gameObject.name + " Disabled");
             
             Camera.onPostRender -= PostRender;
 #if UNITY_2023_3_OR_NEWER
@@ -142,11 +156,25 @@ namespace Drawbug
             RenderPipelineManager.endCameraRendering -= EndCameraRendering;
             
 #if PACKAGE_UNIVERSAL_RP
-			if (_renderPassFeature != null) {
+			if (_renderPassFeature) 
+            {
 				DestroyImmediate(_renderPassFeature);
 				_renderPassFeature = null;
 			}
 #endif
+
+#if UNITY_EDITOR
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+#endif
+        }
+        
+        private void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state is not (PlayModeStateChange.ExitingEditMode or PlayModeStateChange.EnteredEditMode)) return;
+            if (!_instance) return;
+            // DestroyImmediate(_instance.gameObject);
+            EditorApplication.update += DelayedDestroy;
+            _instance = null;
         }
 
         void BeginContextRendering (ScriptableRenderContext context, List<Camera> cameras) 
@@ -176,7 +204,8 @@ namespace Drawbug
 #endif
         }
         
-        private void EndCameraRendering (ScriptableRenderContext context, Camera camera) {
+        private void EndCameraRendering (ScriptableRenderContext context, Camera camera) 
+        {
             if (_currentRenderPipeline == RenderPipelineOption.Custom) 
             {
                 ExecuteCustomRenderPass(context, camera);
@@ -185,26 +214,27 @@ namespace Drawbug
         
         void PostRender (Camera camera) 
         {
-            if (_hasPendingData)
-            {
-                _hasPendingData = false;
-                _draw.GetDataResults();
-            }
-            
-            _cmd.Clear();
-            _draw.Render(_cmd);
+            RenderData(_cmd, true);
             Graphics.ExecuteCommandBuffer(_cmd);
         }
         
         private struct BeginFixedUpdate { }
         private struct ClearDrawbug { }
         private struct BuildDrawbugCommands { }
+        private struct AfterDrawGizmos { }
 
         private void InsertToPlayerLoop()
         {
             PlayerLoopInserter.InsertSystem(typeof(BeginFixedUpdate), typeof(UnityEngine.PlayerLoop.FixedUpdate), InsertType.First, ClearFixedCommands);
             PlayerLoopInserter.InsertSystem(typeof(ClearDrawbug), typeof(UnityEngine.PlayerLoop.EarlyUpdate), InsertType.Before, ClearFrameData);
             PlayerLoopInserter.InsertSystem(typeof(BuildDrawbugCommands), typeof(UnityEngine.PlayerLoop.PostLateUpdate), InsertType.Before, BuildCommandsUpdate);
+            if (Application.isPlaying)
+            {
+            }
+            else
+            {
+                EditorApplication.update += EditorUpdate;
+            }
         }
 
         private void ClearFixedCommands()
@@ -217,15 +247,42 @@ namespace Drawbug
             _draw.Clear();
             _draw.UpdateTimedBuffers(Time.deltaTime);
         }
+        
+        void OnDrawGizmos()
+        {
+            // Your gizmo drawing thing goes here if required...
+
+#if UNITY_EDITOR
+            // Ensure continuous Update calls.
+            if (!Application.isPlaying)
+            {
+                UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+                UnityEditor.SceneView.RepaintAll();
+            }
+#endif
+        }
+
+        private static void EditorUpdate()
+        {
+            // _instance.BuildCommandsUpdate();
+        }
 
         private void RemoveFromPlayerLoop()
         {
+            PlayerLoopInserter.RemoveRunner(typeof(BeginFixedUpdate));
             PlayerLoopInserter.RemoveRunner(typeof(ClearDrawbug));
             PlayerLoopInserter.RemoveRunner(typeof(BuildDrawbugCommands));
+            if (Application.isPlaying)
+            {
+            }
+            else
+            {
+                EditorApplication.update -= EditorUpdate;
+            }
         }
 
         private bool _hasPendingData;
-        
+
         private void BuildCommandsUpdate()
         {
             if (_hasPendingData)
@@ -235,7 +292,7 @@ namespace Drawbug
             _hasPendingData = true;
         }
 
-        private void RenderCustomPass(CommandBuffer cmd, Camera camera)
+        private void RenderData(CommandBuffer cmd, bool clearBeforeRender = false)
         {
             if (_hasPendingData)
             {
@@ -243,47 +300,68 @@ namespace Drawbug
                 _draw.GetDataResults();
             }
             
+            if (clearBeforeRender)
+                _draw.Clear();
             _draw.Render(cmd);
         }
         
+        private void RenderData(RasterCommandBuffer cmd, bool clearBeforeRender = false)
+        {
+            if (_hasPendingData)
+            {
+                _hasPendingData = false;
+                _draw.GetDataResults();
+            }
+            
+            if (clearBeforeRender)
+                _draw.Clear();
+            _draw.Render(cmd);
+        }
+
+        // private void RenderCustomPass(CommandBuffer cmd, Camera camera)
+        // {
+        //     if (_hasPendingData)
+        //     {
+        //         _hasPendingData = false;
+        //         _draw.GetDataResults();
+        //     }
+        //     
+        //     _draw.Render(cmd);
+        // }
+        
         internal static void ExecuteCustomRenderPass(ScriptableRenderContext context, Camera camera)
         {
-            if(!_instance._isEnabled)
+            if(!_instance || !_instance._isEnabled)
                 return;
             
-            _instance._cmd.Clear();
-            _instance.RenderCustomPass(_instance._cmd, camera);
+            _instance.RenderData(_instance._cmd, true);
             context.ExecuteCommandBuffer(_instance._cmd);
         }
         
 #if PACKAGE_UNIVERSAL_RP_17_0_0_OR_NEWER
-        private void RenderGraphPass(RasterCommandBuffer cmd, Camera camera)
-        {
-            if (_hasPendingData)
-            {
-                _hasPendingData = false;
-                _draw.GetDataResults();
-            }
-            
-            _draw.Render(cmd);
-        }
+        // private void RenderGraphPass(RasterCommandBuffer cmd, Camera camera)
+        // {
+        //     RenderData(cmd);
+        // }
 
         internal static void ExecuteCustomRenderGraphPass(RasterCommandBuffer cmd, Camera camera)
         {
             if(!_instance || !_instance._isEnabled)
                 return;
             
-            _instance.RenderGraphPass(cmd, camera);
+            // _instance.RenderGraphPass(cmd, camera);
+            _instance.RenderData(cmd);
         }
 #endif
 
 #if PACKAGE_HIGH_DEFINITION_RP
         internal static void ExecuteCustomPass(CommandBuffer cmd, Camera camera)
         {
-            if(!_instance._isEnabled)
+            if(!_instance || !_instance._isEnabled)
                 return;
             
-            _instance.RenderCustomPass(cmd, camera);
+            // _instance.RenderCustomPass(cmd, camera);
+            _instance.RenderData(cmd);
         }
 #endif
     }
