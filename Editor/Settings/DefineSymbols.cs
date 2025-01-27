@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Build;
 
 namespace DrawBug.Editor
 {
@@ -29,13 +30,12 @@ namespace DrawBug.Editor
             _allDefines.Clear();
             UpdateDefines(_allDefines);
         }
+        
+        private static IEnumerable<string> GetDefines() => PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup)).Split(DEFINE_SEPARATOR).ToList();
 
-        private static IEnumerable<string> GetDefines() => PlayerSettings.GetScriptingDefineSymbolsForGroup(
-            EditorUserBuildSettings.selectedBuildTargetGroup).Split(DEFINE_SEPARATOR).ToList();
-
-        private static void UpdateDefines(List<string> allDefines) => PlayerSettings.SetScriptingDefineSymbolsForGroup
+        private static void UpdateDefines(List<string> allDefines) => PlayerSettings.SetScriptingDefineSymbols
         (
-            EditorUserBuildSettings.selectedBuildTargetGroup,
+            NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup),
         string.Join(DEFINE_SEPARATOR.ToString(), allDefines.ToArray())
         );
     }

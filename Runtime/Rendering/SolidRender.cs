@@ -1,7 +1,9 @@
 ﻿using System;
+using Drawbug.Rendering;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Profiling;
+using Object = UnityEngine.Object;
 
 namespace Drawbug
 {
@@ -65,26 +67,17 @@ namespace Drawbug
             Profiler.EndSample();
         }
 
-        internal void Render(UnityEngine.Rendering.CommandBuffer cmd)
+        internal void Render(CommandBufferWrapper cmd)
         {
             if (!CanRender)
                 return;
             
             cmd.DrawProcedural(_triangles, Matrix4x4.identity, _material, -1, MeshTopology.Triangles, _trianglesCount);
         }
-        
-#if PACKAGE_UNIVERSAL_RP_17_0_0_OR_NEWER
-        internal void Render(UnityEngine.Rendering.RasterCommandBuffer cmd)
-        {
-            if (!CanRender)
-                return;
-            
-            cmd.DrawProcedural(_triangles, Matrix4x4.identity, _material, -1, MeshTopology.Triangles, _trianglesCount);
-        }
-#endif
 
         public void Dispose()
         {
+            Object.DestroyImmediate(_material);
             _positions?.Dispose();
             _triangles?.Dispose();
             _styleData?.Dispose();

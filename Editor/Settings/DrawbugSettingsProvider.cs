@@ -1,6 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using DrawBug.Editor;
+using Unity.Plastic.Newtonsoft.Json;
+using Unity.Plastic.Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEditorInternal;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Drawbug.PhysicsExtension.Editor
@@ -24,6 +30,7 @@ namespace Drawbug.PhysicsExtension.Editor
                     minHeight = 20,
                     paddingLeft = 11,
                     flexDirection = FlexDirection.Row,
+                    justifyContent = Justify.SpaceBetween,
                 }
             };
             rootElement.Add(header);
@@ -36,6 +43,18 @@ namespace Drawbug.PhysicsExtension.Editor
                 }
             };
             header.Add(headerTitle);
+            
+            var resetButton = new Button(ResetSettings)
+            {
+                name = "Reset",
+                text = "Reset",
+                style =
+                {
+                    fontSize = 12,
+                    marginRight = 12,
+                }
+            };
+            header.Add(resetButton);
 
             var shapesContainer = new VisualElement
             {
@@ -80,25 +99,102 @@ namespace Drawbug.PhysicsExtension.Editor
             };
             physicsContainer.Add(physicsTitle);
             var hitColorField = new PropertyField();
-            hitColorField.BindProperty(_drawbugSettings.FindProperty("hitColor"));
+            hitColorField.BindProperty(_drawbugSettings.FindProperty(nameof(DrawbugSettings.hitColor)));
             physicsContainer.Add(hitColorField);
             var noHitColorField = new PropertyField();
-            noHitColorField.BindProperty(_drawbugSettings.FindProperty("noHitColor"));
+            noHitColorField.BindProperty(_drawbugSettings.FindProperty(nameof(DrawbugSettings.noHitColor)));
             physicsContainer.Add(noHitColorField);
             var pointColorField = new PropertyField();
-            pointColorField.BindProperty(_drawbugSettings.FindProperty("pointColor"));
+            pointColorField.BindProperty(_drawbugSettings.FindProperty(nameof(DrawbugSettings.pointColor)));
             physicsContainer.Add(pointColorField);
-
-            // rootElement.Add(shapesTitleElement);
-            // rootElement.Add(occludedWireOpacityField);
-            // rootElement.Add(occludedSolidOpacityField);
-            // rootElement.Add(physicsTitleElement);
-            // rootElement.Add(hitColorField);
-            // rootElement.Add(noHitColorField);
-            // rootElement.Add(pointColorField);
+            var enableDrawPhysicsField = new PropertyField();
+            enableDrawPhysicsField.BindProperty(_drawbugSettings.FindProperty(nameof(DrawbugSettings.enableDrawPhysics)));
+            physicsContainer.Add(enableDrawPhysicsField);
+            
+            var bottomContainer = new VisualElement
+            {
+                name = "Bottom Container",
+                style =
+                {
+                    paddingBottom = 12,
+                    paddingLeft = 12,
+                    paddingRight = 3,
+                    flexDirection = FlexDirection.Row,
+                    justifyContent = Justify.FlexEnd,
+                }
+            };
+            rootElement.Add(bottomContainer);
+            var applyButton = new Button(ApplySettings)
+            {
+                name = "Apply",
+                text = "Apply",
+                style =
+                {
+                    fontSize = 12,
+                    marginRight = 12,
+                }
+            };
+            bottomContainer.Add(applyButton);
             
             base.OnActivate(searchContext, rootElement);
         }
+
+        private void ResetSettings()
+        {
+            var drawbugSettings = _drawbugSettings.targetObject as DrawbugSettings;
+            drawbugSettings?.RestoreDefaultSettings();
+            EditorUtility.SetDirty(drawbugSettings);
+            AssetDatabase.SaveAssets();
+            ApplySettings();
+        }
+
+        private void ApplySettings()
+        {
+            var enableDrawPhysics = _drawbugSettings.FindProperty(nameof(DrawbugSettings.enableDrawPhysics)).boolValue;
+            if (enableDrawPhysics)
+                DefineSymbols.Remove("DONT_DRAW_PHYSICS");
+            else
+                DefineSymbols.Add("DONT_DRAW_PHYSICS");
+            
+            AssetDatabase.Refresh();
+        }
+
+        // private void ApplyDefinesToAssemblyDef()
+        // {
+        //     const string asmdefPath = "Packages/com.mastersix.drawbug/Runtime/Drawbug.asmdef";
+        //     const string defineToAdd = "DRAWBUG_REMOVE_ALL_CALLS";
+        //
+        //     if (!File.Exists(asmdefPath))
+        //     {
+        //         Debug.LogError($"The file .asmdef is not found at: {asmdefPath}");
+        //         return;
+        //     }
+        //
+        //     var asmdefJson = File.ReadAllText(asmdefPath);
+        //     var asmdefObject = JObject.Parse(asmdefJson);
+        //     
+        //     var defineConstraints = asmdefObject["defineConstraints"] as JArray;
+        //     if (defineConstraints == null)
+        //     {
+        //         defineConstraints = new JArray();
+        //         asmdefObject["defineConstraints"] = defineConstraints;
+        //     }
+        //
+        //     var removeFromPlayerBuild = _drawbugSettings.FindProperty(nameof(DrawbugSettings.removeFromPlayerBuild)).boolValue;
+        //     if (removeFromPlayerBuild && !defineConstraints.Contains(defineToAdd))
+        //     {
+        //         defineConstraints.Add('!' + defineToAdd);
+        //         Debug.Log($"Definition '{defineToAdd}' added.");
+        //     }
+        //     else if (!removeFromPlayerBuild && defineConstraints.Contains(defineToAdd))
+        //     {
+        //         defineConstraints.Remove('!' + defineToAdd);
+        //         Debug.Log($"Definition '{defineToAdd}' removed.");
+        //     }
+        //
+        //     var updatedAsmdefJson = JsonConvert.SerializeObject(asmdefObject, Formatting.Indented);
+        //     File.WriteAllText(asmdefPath, updatedAsmdefJson);
+        // }
 
         [SettingsProvider]
         public static SettingsProvider CreateSettingsProvider()
