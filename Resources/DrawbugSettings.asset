@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   occludedWireOpacity: 0.05
   occludedSolidOpacity: 0
-  drawPhysicsEnabled: 1
   hitColor: {r: 0, g: 1, b: 0, a: 1}
   noHitColor: {r: 1, g: 0, b: 0, a: 1}
   pointColor: {r: 1, g: 0, b: 0, a: 1}
+  enableDrawPhysics: 1

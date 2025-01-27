@@ -1,4 +1,5 @@
 ﻿using System;
+using Drawbug.Rendering;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
@@ -68,7 +69,7 @@ namespace Drawbug
             }
         }
 
-        internal void Render(UnityEngine.Rendering.CommandBuffer cmd)
+        internal void Render(CommandBufferWrapper cmd)
         {
             if (_commandBuffer.HasData)
             {
@@ -76,16 +77,7 @@ namespace Drawbug
                 _solidRender.Render(cmd);
             }
         }
-#if PACKAGE_UNIVERSAL_RP_17_0_0_OR_NEWER
-        internal void Render(UnityEngine.Rendering.RasterCommandBuffer cmd)
-        {
-            if (_commandBuffer.HasData)
-            {
-                _wireRender.Render(cmd);
-                _solidRender.Render(cmd);
-            }
-        }
-#endif
+        
         public void Dispose()
         {
             _commandBuffer.Dispose();
